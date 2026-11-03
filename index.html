@@ -18,6 +18,10 @@ html,body{margin:0;height:100%;overflow:hidden;background:#1c1a22;font-family:'N
 .lbl.me .nm{background:rgba(200,64,46,.88)}
 .lbl .bub{display:none;max-width:200px;white-space:normal;margin:0 auto 5px;padding:6px 10px;border-radius:12px;background:var(--cream);color:var(--ink);font-size:13px;line-height:1.35;box-shadow:0 3px 10px rgba(0,0,0,.25);word-break:keep-all;overflow-wrap:anywhere}
 .lbl .bub.on{display:block}
+.lbl.npc .bub{background:rgba(255,250,242,.66);box-shadow:0 2px 6px rgba(0,0,0,.12);backdrop-filter:blur(3px)}
+.lbl .pin{display:none;width:max-content;max-width:190px;margin:0 auto 4px;padding:3px 9px;border-radius:11px;background:#ffe9a8;color:#3a2a10;font-size:12px;font-weight:500;border:1px dashed rgba(120,80,20,.45);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;box-shadow:0 2px 6px rgba(0,0,0,.18)}
+.lbl .pin.on{display:block}
+#pinBtn{flex:none;margin-left:6px;border:1px solid rgba(246,238,227,.2);background:rgba(43,33,29,.72);color:var(--cream);border-radius:12px;padding:0 11px;font-size:14px;cursor:pointer;backdrop-filter:blur(6px)}#pinBtn.on{background:#e8b64c;border-color:#e8b64c}
 .lbl .stl{display:none;width:max-content;margin:0 auto 3px;font-size:10.5px;padding:1px 7px;border-radius:9px;background:rgba(255,248,236,.88);color:#2b211d}
 .lbl .zz{display:none;font-family:'Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic',sans-serif;font-size:13px;color:#cfd8f0;animation:zz 2.4s infinite}
 .lbl .zz.on{display:block}
@@ -140,7 +144,7 @@ body.touch #log{bottom:280px}
   <button class="act" id="toyBtn" style="display:none"><b>5</b>🪶 놀이 시작</button>
   <div id="actPop"><div class="main"><div class="mt">무엇을 할까요?</div><button data-x="read"><b>1</b><span class="rl">📖 책 읽기</span><small class="rs">책장에서 골라요</small></button><button data-x="work"><b>2</b>💻 노트북 작업<small>빈자리 · 캐쉬 적립</small></button><button data-x="job"><b>3</b><span class="jl">🧑‍🍳 알바하기</span><small class="js">10초마다 800원 · 1명만</small></button><button data-x="swap" class="swp" style="display:none"><b>4</b>📚 다른 책 고르기</button></div><div class="books"><div class="mt">어떤 책을 읽을까요?</div><div class="bgrid"></div></div></div>
   <div id="menuPop"><div class="mt">무엇을 주문할까요? <span id="mCash"></span></div><button data-d="ha"><b>1</b>☕ 핫 아메리카노<small></small></button><button data-d="ia"><b>2</b>🧊 아이스 아메리카노<small></small></button><button data-d="hl"><b>3</b>🥛 핫 라떼<small></small></button><button data-d="il"><b>4</b>🥤 아이스 라떼<small></small></button><button data-d="im"><b>5</b>🧋 아이스 밀크티<small></small></button><button data-d="mt"><b>6</b>🍵 아이스 말차라떼<small></small></button><button data-d="fi"><b>7</b>🧈 휘낭시에<small></small></button><button data-d="cr"><b>8</b>🌀 시나몬롤<small></small></button><button data-d="et"><b>9</b>🥧 에그타르트<small></small></button><button data-d="cu"><b>0</b>🐟 츄르 1개<small></small></button><button data-d="ty"><b>T</b>🪶 고양이 장난감<small></small></button></div>
-  <form id="chatf" autocomplete="off"><input id="chat" maxlength="80" placeholder="Enter 로 쓰고, Enter 로 말하기"></form>
+  <form id="chatf" autocomplete="off"><input id="chat" maxlength="80" placeholder="Enter 로 말하기 · 📌 로 고정"><button type="button" id="pinBtn" title="입력한 말을 머리 위에 고정 (비우고 누르면 해제)">📌</button></form>
 </div>
 <div id="intro">
   <div class="card">
@@ -1147,7 +1151,8 @@ function animChar(g,st,t,moving,dt){
   for(const tr of u.tears){tr.visible=crying;if(crying){const E=u.eyeP,ph=(tt*1.1+tr.userData.j*.5)%1;tr.position.y=E.y-.03-ph*.11;tr.position.x=tr.userData.sx*(E.x+.012+ph*.02);tr.position.z=E.z-ph*.03;tr.material.opacity=.9*(1-ph*.6)}}
 }
 const labelsEl=$('#labels');
-function makeLabel(isMe){const el=document.createElement('div');el.className='lbl'+(isMe?' me':'');const b=document.createElement('div');b.className='bub';const z=document.createElement('div');z.className='zz';z.textContent='z z z';const n=document.createElement('span');n.className='nm';const sl=document.createElement('div');sl.className='stl';el.append(b,z,sl,n);labelsEl.appendChild(el);return {el,b,z,n,sl,stt:'',bubUntil:0}}
+function makeLabel(isMe){const el=document.createElement('div');el.className='lbl'+(isMe?' me':'');const b=document.createElement('div');b.className='bub';const z=document.createElement('div');z.className='zz';z.textContent='z z z';const n=document.createElement('span');n.className='nm';const sl=document.createElement('div');sl.className='stl';const pn=document.createElement('div');pn.className='pin';el.append(b,z,pn,sl,n);labelsEl.appendChild(el);return {el,b,z,n,sl,pn,pnt:'',stt:'',bubUntil:0}}
+function setPin(lbl,t){t=t||'';if(t===lbl.pnt)return;lbl.pnt=t;lbl.pn.textContent=t?'📌 '+t:'';lbl.pn.classList.toggle('on',!!t)}
 function lblStatus(lbl,st){const B=BOOKS[st.bk];const t=st.a==='read'&&B?`${B.e} ${B.n} 읽는 중`:st.a==='browse'?'🤔 책 고르는 중':st.a==='bake'?'🧑‍🍳 알바 · 굽는 중':st.a==='dish'?'🧽 알바 · 설거지 중':(st.job||st.jb)?'🧑‍🍳 알바 중':'';if(t!==lbl.stt){lbl.stt=t;lbl.sl.textContent=t;lbl.sl.style.display=t?'block':'none'}}
 
 /* ---------- barista (always at the counter) ---------- */
@@ -1169,7 +1174,7 @@ const barista={g:makeChar(1,'m'),lbl:makeLabel(false),a:'wipe',s:-1,h:0};
   const brim=new THREE.Mesh(new THREE.CylinderGeometry(.18,.18,.014,20,1,false,-Math.PI/2,Math.PI),capM);brim.position.set(0,CY+SK[1]*.42,SK[2]*.72);brim.rotation.x=.18;brim.scale.z=.85;u.head.add(brim);
 })();
 const bStand=new THREE.Group();bStand.position.set(6.7,.38,-1.6);scene.add(bStand);bStand.add(barista.g);barista.g.rotation.y=-Math.PI/2;
-box(1.3,.38,5.3,M('#7a5434',{roughness:.8}),6.95,.19,-.45);const PLAT=[6.25,7.6,-3.1,2.25];COL.push(PLAT);barista.lbl.n.textContent='바리스타';barista.lbl.n.style.background='rgba(43,69,151,.88)';
+box(1.3,.38,5.3,M('#7a5434',{roughness:.8}),6.95,.19,-.45);const PLAT=[6.25,7.6,-3.1,2.25];COL.push(PLAT);barista.lbl.n.textContent='바리스타';barista.lbl.n.style.background='rgba(43,69,151,.5)';barista.lbl.el.classList.add('npc');
 COL.push([6.45,6.95,-1.85,-1.35]);
 const cCups={};for(const k in DRINK){cCups[k]=buildDrink(k);cCups[k].position.set(5.45,1.13,-1.6);cCups[k].visible=false;scene.add(cCups[k])}
 for(const k in DESSERT){cCups[k]=buildDessert(k);cCups[k].position.set(5.45,1.065,-1.6);cCups[k].visible=false;scene.add(cCups[k])}
@@ -1184,7 +1189,7 @@ function lightShadow(g){g.traverse(o=>{if(o.isMesh)o.castShadow=false});const b=
 function npcState(o){return Object.assign({a:'',s:-1,h:0,d:'ha',l:SIPS,ds:'',dl:BITES,cc:0,pc:-1,cry:0,bk:-1},o)}
 function seatAt(x,z,out){return SEATS.findIndex(st=>Math.abs(st.x-x)<.02&&Math.abs(st.z-z)<.02&&!!st.out===!!out)}
 const NPCS=[];
-function addNPC(ci,gd,name,si,st){const g=lightShadow(makeChar(ci,gd));scene.add(g);const S=SEATS[si];g.position.set(S.x,0,S.z);g.rotation.y=S.r;const lbl=makeLabel(false);lbl.n.textContent=name;lbl.n.style.background='rgba(90,80,70,.6)';
+function addNPC(ci,gd,name,si,st){const g=lightShadow(makeChar(ci,gd));scene.add(g);const S=SEATS[si];g.position.set(S.x,0,S.z);g.rotation.y=S.r;const lbl=makeLabel(false);lbl.n.textContent=name;lbl.n.style.background='rgba(90,80,70,.32)';lbl.el.classList.add('npc');
   NPC_SEATS.add(si);const n={g,lbl,st:npcState(Object.assign({s:si},st))};NPCS.push(n);return n}
 // outdoor reader (bench seat at x -7.0) + coffee on the little stool table
 const reader=addNPC(4,'f','하린',seatAt(-7.0,FZ-.3,true),{a:'read',bk:3});
@@ -1306,6 +1311,7 @@ function syncPeers(peers){
     o.tx=num(pr.x,-W,W,0);o.tz=num(pr.z,-D,D,0);o.tr=num(pr.r,-10,10,0);
     o.a=['sip','read','work','pet','order','yay','feed','bite','browse','bake','dish'].includes(pr.a)?pr.a:'';o.jb=pr.jb?1:0;o.tw=pr.tw?1:0;o.bk=Number.isInteger(pr.bk)&&BOOKS[pr.bk]?pr.bk:-1;o.ds=DESSERT[pr.ds]?pr.ds:'';o.dl=Number.isInteger(pr.dl)?clamp(pr.dl,0,BITES):BITES;o.cc=Number.isInteger(pr.cc)?clamp(pr.cc,0,40):0;o.pc=Number.isInteger(pr.pc)?pr.pc:-1;o.cry=pr.cry?1:0;o.pf=num(pr.pf,0,1e15,0);o.d=DRINK[pr.d]?pr.d:'ha';o.h=pr.h?1:0;o.l=Number.isInteger(pr.l)?clamp(pr.l,0,SIPS):SIPS;o.s=Number.isInteger(pr.s)&&SEATS[pr.s]?pr.s:-1;
     const nm=str(pr.n,24);if(nm!==o.name){o.name=nm;o.lbl.n.textContent=nm}
+    {const pn=typeof pr.pn==='string'?pr.pn.slice(0,30):'';if(pn!==o.pn){o.pn=pn;setPin(o.lbl,pn)}}
     const mt=num(pr.mt,0,1e15,0),m=str(pr.m,80);
     if(mt&&mt!==o.mt){o.mt=mt;if(m&&Date.now()-mt<15000){showBubble(o.lbl,m);logLine(nm,m)}}
   }
@@ -1344,7 +1350,7 @@ function updateCount(){
   const n=others.size+(entered?1:0);
   el.textContent=n<=1?(entered?'지금은 당신 혼자 머무는 중 · 1/10':'아직 아무도 없어요'):`지금 ${n}명이 머무는 중 · ${Math.min(n,CH_CAP)}/${CH_CAP}`;
 }
-function myState(){return {n:me.name,c:me.c,gd:me.gd,x:Math.round(player.x*100)/100,z:Math.round(player.z*100)/100,r:Math.round(player.r*100)/100,a:player.a==='order'?'order':player.a,d:player.d,h:player.drink?1:0,l:player.drink?player.drink.left:0,cry:player.cry?1:0,ds:player.ds,dl:player.dl,pf:player.pf||0,cc:player.churu||0,pc:player.pc,s:player.s,bk:player.bk,jb:player.job?1:0,tw:player.tw?1:0}}
+function myState(){return {n:me.name,c:me.c,gd:me.gd,x:Math.round(player.x*100)/100,z:Math.round(player.z*100)/100,r:Math.round(player.r*100)/100,a:player.a==='order'?'order':player.a,d:player.d,h:player.drink?1:0,l:player.drink?player.drink.left:0,cry:player.cry?1:0,ds:player.ds,dl:player.dl,pf:player.pf||0,cc:player.churu||0,pc:player.pc,s:player.s,bk:player.bk,jb:player.job?1:0,tw:player.tw?1:0,pn:player.pn||''}}
 function pub(t,o){if(ch&&live)try{ch.publish(P+t,JSON.stringify(o),{qos:0})}catch(e){}}
 function pubR(t,o){if(ch&&live)try{ch.publish(P+t,o==null?'':JSON.stringify(o),{qos:1,retain:true})}catch(e){}}
 function sendPresence(force){
@@ -1387,6 +1393,13 @@ const logEl=$('#log');
 function logLine(name,msg){const d=document.createElement('div');const i=document.createElement('i');i.textContent=name;d.append(i,document.createTextNode('  '+msg));logEl.appendChild(d);while(logEl.children.length>6)logEl.firstChild.remove();setTimeout(()=>{d.style.opacity='0';setTimeout(()=>d.remove(),1300)},14000)}
 function showBubble(lbl,msg){lbl.b.textContent=msg;lbl.b.classList.add('on');lbl.bubUntil=performance.now()+6500}
 const chatIn=$('#chat');
+player.pn='';
+function togglePin(){if(!entered)return;const t=chatIn.value.trim().slice(0,30);
+  if(t){player.pn=t;chatIn.value='';toast('📌 말풍선을 고정했어요 · 모두에게 보여요')}
+  else if(player.pn){player.pn='';toast('📌 고정을 풀었어요')}
+  else{toast('입력창에 쓰고 📌 을 누르면 머리 위에 고정돼요');chatIn.focus();return}
+  setPin(player.lbl,player.pn);$('#pinBtn').classList.toggle('on',!!player.pn);sendPresence(true)}
+$('#pinBtn').addEventListener('pointerdown',e=>e.preventDefault());$('#pinBtn').addEventListener('click',e=>{e.preventDefault();togglePin()});
 function sendChat(){const m=chatIn.value.trim().slice(0,80);chatIn.value='';chatIn.blur();if(!m||!entered)return;showBubble(player.lbl,m);logLine(me.name,m);pub('chat',{id:myId,m,mt:Date.now()})}
 $('#chatf').addEventListener('submit',e=>{e.preventDefault();sendChat()});
 chatIn.addEventListener('keydown',e=>{e.stopPropagation();if(e.key==='Enter'){if(e.isComposing||e.keyCode===229)return;e.preventDefault();sendChat()}else if(e.key==='Escape'){chatIn.value='';chatIn.blur()}});
@@ -1872,7 +1885,7 @@ PERCH.bench.seat=SEATS.findIndex(st=>Math.abs(st.x+5.5)<.01&&st.z>5.3);PERCH.ben
 TABLES.forEach(([x,z],i)=>{const ap=freeNear(x,z+(i%2?.85:-.85));PERCH['t'+i]={x:x+.12,z:z-.08,y:.79,ax:ap.x,az:ap.z,face:rand(-3,3)}});
 for(const i of NPC_SEATS)delete PERCH['s'+i];delete PERCH.t0; // the couple's table & chairs stay free of cats
 const turnTo=(a,b,k)=>{let d=b-a;d=Math.atan2(Math.sin(d),Math.cos(d));return a+d*Math.min(1,k)};
-const catLblCss=document.createElement('style');catLblCss.textContent='.lbl.cat .nm{font-size:11px;padding:1px 7px;background:rgba(255,250,242,.8);color:#2b211d}.lbl.cat.fav .nm{background:#ffd9c2}';document.head.appendChild(catLblCss);
+const catLblCss=document.createElement('style');catLblCss.textContent='.lbl.cat .nm{font-size:11px;padding:1px 7px;background:rgba(255,250,242,.45);color:#2b211d}.lbl.cat.fav .nm{background:#ffd9c2}';document.head.appendChild(catLblCss);
 const CATS=CAT_DEF.map((d,i)=>{
   const sp=Object.assign({},CAT_SPECS[d.key],{name:d.name});const m=makeCat(sp);scene.add(m.root);m.root.traverse(o=>{o.userData.catIdx=i});
   const p=PERCH[d.home];const lbl=makeLabel(false);lbl.el.classList.add('cat');lbl.n.textContent=d.name;
