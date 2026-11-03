@@ -259,7 +259,7 @@ window.CAT_SPECS={
 <script>
 (function(){
 'use strict';
-const $=s=>document.querySelector(s);
+const $=s=>document.querySelector(s)||(typeof pipWin!=='undefined'&&pipWin&&pipWin.document.querySelector(s));
 const rand=(a,b)=>a+Math.random()*(b-a);
 const pick=a=>a[Math.floor(Math.random()*a.length)];
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
@@ -842,7 +842,7 @@ const cur={skyT:env.skyT.clone(),skyB:env.skyB.clone(),sun:env.sun.clone(),hemiC
 let pendingEv=null;
 function kstDate(){const d=new Date(Date.now()+TZ_OFF*3600e3);return d.getUTCFullYear()+'-'+(d.getUTCMonth()+1)+'-'+d.getUTCDate()}
 const CD_SUB={8:'오늘도 천천히, 한 잔씩 ☕',7:'점심 메뉴 고민할 시간이에요',6:'점심 맛있게 드세요! 🍱',5:'커피 한 잔 더 하실래요?',4:'오후도 힘내요, 거의 반이에요',3:'디저트 타임 🍰 당 충전!',2:'조금만 더! 기지개 한 번 쭉~',1:'마지막 한 시간, 버티면 퇴근 🎉'};
-function checkCountdown(k){if(k.hh<10||k.hh>17||k.mm!==0||!entered)return;const key='uhwa-cd-'+kstDate()+'-'+k.hh;let done=false;try{done=!!sessionStorage.getItem(key)}catch(e){}if(done)return;try{sessionStorage.setItem(key,'1')}catch(e){}
+function checkCountdown(k){if(k.hh<10||k.hh>17||k.mm>1||!entered)return;const key='uhwa-cd-'+kstDate()+'-'+k.hh;let done=false;try{done=!!sessionStorage.getItem(key)}catch(e){}if(done)return;try{sessionStorage.setItem(key,'1')}catch(e){}
   const n=18-k.hh;banner(`퇴근 ${n}시간 전!`,CD_SUB[n]||'',`cd`,10000);sfx('ding')}
 function checkClockEvents(){const k=kstNow();checkCountdown(k);let ev=null;if(k.hh===9)ev='am';else if(k.hh===18)ev='pm';if(!ev)return;
   const key='uhwa-ev-'+kstDate()+'-'+ev;let done=false;try{done=!!localStorage.getItem(key)}catch(e){}if(done)return;
@@ -2177,6 +2177,7 @@ function loop(now,gen,once){
 }
 drawWindow(cur,0);drawSky(cur);requestAnimationFrame(loop);
 /* ---------- Picture-in-Picture: keep the cafe floating while doing other things ---------- */
+const PIP_MOVE=['#banner','#toast','#offPop'].map(q=>document.querySelector(q));
 async function openPip(){
   if(pipWin){pipWin.close();return}
   if(vidPip){try{await document.exitPictureInPicture()}catch(e){}return}
@@ -2184,7 +2185,7 @@ async function openPip(){
     try{const w=await documentPictureInPicture.requestWindow({width:480,height:300});pipWin=w;
       for(const n of document.querySelectorAll('style,link[rel=stylesheet]'))w.document.head.appendChild(n.cloneNode(true));
       w.document.title='HOGI ROASTERS';w.document.body.style.cssText='margin:0;background:#000;overflow:hidden';
-      w.document.body.append(canvas,labelsEl);
+      w.document.body.append(canvas,labelsEl,...PIP_MOVE);
       {const d=w.document,f=d.createElement('div'),i=d.createElement('input');i.autocomplete='off';i.maxLength=80;i.placeholder='💬 여기에 쓰고 Enter';i.setAttribute('enterkeyhint','send');
         f.style.cssText='position:fixed;left:8px;right:8px;bottom:8px;margin:0;z-index:5';
         i.style.cssText="width:100%;box-sizing:border-box;font:13px 'Noto Sans KR','Apple SD Gothic Neo',sans-serif;padding:8px 12px;border-radius:12px;border:1px solid rgba(246,238,227,.3);background:rgba(43,33,29,.78);color:#f6eee3;outline:none;backdrop-filter:blur(6px)";
@@ -2197,7 +2198,7 @@ async function openPip(){
     try{const v=document.createElement('video');v.muted=true;v.playsInline=true;v.srcObject=canvas.captureStream(30);await v.play();await v.requestPictureInPicture();vidPip=v;$('#tPip').classList.add('on');
       v.addEventListener('leavepictureinpicture',()=>{vidPip=null;$('#tPip').classList.remove('on');v.srcObject=null});toast('🪟 PiP로 띄웠어요 · 보기 전용이에요');return}catch(e){vidPip=null}}
   toast('이 브라우저는 PiP를 지원하지 않아요 · 크롬이나 엣지(PC)에서 써 보세요')}
-function closedPip(){if(!pipWin)return;pipWin=null;document.body.prepend(labelsEl);document.body.prepend(canvas);$('#pipNote').classList.remove('on');$('#tPip').classList.remove('on');resize();loopGen++;requestAnimationFrame(t=>loop(t,loopGen))}
+function closedPip(){if(!pipWin)return;pipWin=null;document.body.append(...PIP_MOVE);document.body.prepend(labelsEl);document.body.prepend(canvas);$('#pipNote').classList.remove('on');$('#tPip').classList.remove('on');resize();loopGen++;requestAnimationFrame(t=>loop(t,loopGen))}
 $('#tPip').addEventListener('click',e=>{e.stopPropagation();openPip()});
 $('#pipBack').addEventListener('click',()=>{if(pipWin)pipWin.close()});
 // keep the video-PiP alive when this tab is in the background
