@@ -27,6 +27,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#1c1a22;font-family:'N
 .lbl .zz.on{display:block}
 @keyframes zz{0%{opacity:0;transform:translateY(4px)}40%{opacity:1}100%{opacity:0;transform:translateY(-10px)}}
 body.kb #bar .act,body.kb #joy,body.kb #log{display:none!important}body.kb #toast{top:calc(64px + var(--vvt,0px))}
+#sales{font-size:12px;opacity:.88;margin-top:4px;text-shadow:0 1px 4px rgba(0,0,0,.5);transition:transform .25s,color .25s;transform-origin:left center}#sales.bump{transform:scale(1.12);color:#ffd166}
 #hud{position:fixed;left:16px;top:calc(14px + var(--vvt,0px));pointer-events:none}
 #hud h1{margin:0;font-family:'Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic',sans-serif;font-weight:700;font-size:20px;letter-spacing:.04em;text-shadow:0 2px 8px rgba(0,0,0,.55)}
 #hud h1 span{font-weight:400;opacity:.7;margin-left:6px;font-size:15px}
@@ -129,7 +130,7 @@ body.touch #log{bottom:280px}
 <body>
 <canvas id="c"></canvas>
 <div id="labels"></div>
-<div id="hud"><h1>HOGI ROASTERS<span>호기로스터스</span></h1><div id="clock"></div><div id="count">문을 여는 중…</div><div id="cash">💰 0원</div><div id="chTag"></div></div>
+<div id="hud"><h1>HOGI ROASTERS<span>호기로스터스</span></h1><div id="clock"></div><div id="count">문을 여는 중…</div><div id="cash">💰 0원</div><div id="chTag"></div><div id="sales"></div></div>
 <div id="snd"><button class="pill" id="tCh" title="채널 바꾸기" style="display:none">🔁 채널</button><button class="pill" id="tTime" title="시간대 바꾸기 (코드 필요)">🕰 실시간</button><button class="pill" id="tMusic">음악</button><button class="pill" id="tPip" title="작은 창으로 띄워 놓고 다른 일 하기">🪟 PiP</button><button class="pill" id="tGB">📖 방명록</button><button class="pill" id="tAmb" title="낮엔 새소리, 밤엔 풀벌레 소리">🌿 바깥 소리</button></div>
 <div class="sndPop" id="musPop"><div class="sp-t">오늘의 음악</div><div class="glist"></div><label class="vrow">볼륨<input type="range" id="mVol" min="0" max="100" step="1"><b id="mVolV"></b></label></div>
 <div class="sndPop" id="gbPop"><div class="sp-t">📖 오늘의 방명록 <span id="gbCh" style="font-weight:400;opacity:.6;font-size:11px"></span></div><div class="sp-s">이 채널 모두가 함께 봐요 · 한국 시간 자정에 새 페이지 <span id="gbSt"></span></div><div id="gbList"></div><form id="gbForm" autocomplete="off"><input id="gbIn" maxlength="100" placeholder="한 줄 남기기 (100자)"><button>남기기</button></form></div>
@@ -1372,17 +1373,19 @@ function connectMQTT(){
   try{
     ch=window.mqtt.connect(BROKER,{clientId:'uhwa_'+myId,clean:true,keepalive:30,reconnectPeriod:3000,connectTimeout:10000,
       will:{topic:P+'bye/'+myId,payload:'1',qos:0,retain:false}});
-    ch.on('connect',()=>{live=true;ch.subscribe(P+'#',{qos:0},()=>{pub('hi',{id:myId});gbOnline();if(entered)sendPresence(true)});updateCount()});
+    ch.on('connect',()=>{live=true;ch.subscribe(P+'#',{qos:0},()=>{pub('hi',{id:myId});gbOnline();saleOnline();if(entered)sendPresence(true)});updateCount()});
     ch.on('close',()=>{live=false;updateCount()});ch.on('offline',()=>{live=false;updateCount()});ch.on('error',()=>{});
     ch.on('message',(topic,buf,pkt)=>{
       if(!topic.startsWith(P)||buf.length>(topic.endsWith('/gbsync')?60000:4096))return;
       const t=topic.slice(P.length);let d=null;try{d=buf.length?JSON.parse(buf.toString()):null}catch(e){}
       if(t.startsWith('gb/')){onGB(t.slice(3),d,!!(pkt&&pkt.retain),topic);return}
+      if(t.startsWith('sale/')){onSale(t.slice(5),d,topic);return}
       if(t.startsWith('st/')){if(d&&typeof d==='object'){delete d.m;delete d.mt;upsert(t.slice(3),d)}}
       else if(t==='chat'){if(d&&typeof d.id==='string')upsert(d.id,{m:d.m,mt:d.mt})}
       else if(t==='hi'){if(d&&d.id!==myId){sendPresence(true);onHi()}}
       else if(t==='cats'||t==='feed'||t==='time'){handleExtra(t,d)}
       else if(t==='gbreq'||t==='gbsync'){onGBPeer(t,d)}
+      else if(t==='salereq'||t==='salesync'){onSalePeer(t,d)}
       else if(t.startsWith('bye/')){if(others.delete(t.slice(4))){emitPeers()}updateCount()}
     });
   }catch(e){ch=null;updateCount()}
@@ -1458,7 +1461,7 @@ const PICK={x:4.78,z:-1.6};let order=null;
 function placeOrder(d){
   if(order){toast('카운터에서 주문한 걸 먼저 받아가세요');return}
   const D=d==='cu'?CHURU:d==='ty'?TOY:(DRINK[d]||DESSERT[d]);if(cash<D.price){toast(`${won(D.price-cash)}이 모자라요 · 작업으로 모아보세요`);return}
-  closeMenu();cash-=D.price;saveCash();renderCash();floatText('-'+won(D.price),player.x,1.9,player.z);
+  closeMenu();cash-=D.price;saveCash();renderCash();recordSale(D.price);floatText('-'+won(D.price),player.x,1.9,player.z);
   order={d,stage:'walk',t:0};if(player.a&&player.a!=='sip')player.a='';actBtns.forEach(b=>b.classList.remove('on'));renderWork();
   if(player.s>=0)standUp();
   moveTo={x:PICK.x,z:PICK.z,seat:-1,order:true,best:Infinity,stuck:0};marker.position.set(PICK.x,.015,PICK.z);marker.material.opacity=.9;
@@ -1777,6 +1780,20 @@ function renderGB(){const L=[...GB.values()].sort((a,b)=>b.t-a.t).slice(0,100);$
   if(!entered){box.innerHTML='<div class="empty">입장하면 이 채널의 방명록을 볼 수 있어요</div>';return}
   if(!L.length){box.innerHTML='<div class="empty">아직 오늘의 첫 글이 없어요 · 첫 줄을 남겨 주세요</div>';return}
   for(const e of L){const d=document.createElement('div');d.className='e';const b=document.createElement('b');b.textContent=e.n;const i=document.createElement('i');const k=new Date(e.t+TZ_OFF*3600e3);i.textContent=`${String(k.getUTCHours()).padStart(2,'0')}:${String(k.getUTCMinutes()).padStart(2,'0')}`;d.append(i,b,document.createTextNode(e.m));box.appendChild(d)}}
+/* ---------- today's sales per channel (resets at KST midnight, like the guestbook) ---------- */
+const SALES=new Map();let saleDay=kstDate(),mySale={t:0,n:0},saleSyncSeen=0,lastSaleTot=-1;
+function saleReset(){SALES.clear();mySale={t:0,n:0};saleDay=kstDate();renderSales()}
+function renderSales(bump){const el=$('#sales');if(!entered){el.textContent='';return}let tot=0,n=0;for(const v of SALES.values()){tot+=v.t;n+=v.n}
+  el.textContent=`📈 오늘 매출 ${won(tot)} · ${n}건`;if(lastSaleTot>=0&&tot>lastSaleTot||bump){el.classList.add('bump');setTimeout(()=>el.classList.remove('bump'),600)}lastSaleTot=tot}
+function onSale(rest,d,topic){const [day,id]=rest.split('/');if(!id||!/^[a-z0-9]{4,16}$/.test(id))return;
+  if(day!==kstDate()){if(d&&ch&&live)try{ch.publish(topic,'',{qos:1,retain:true})}catch(e){}return}if(!d)return;
+  const t=Math.max(0,Math.min(1e7,Number(d.t)||0)),n=Math.max(0,Math.min(1e4,Number(d.n)||0)),prev=SALES.get(id);if(!prev||t>prev.t||n>prev.n){SALES.set(id,{t,n});renderSales()}}
+function recordSale(price){if(saleDay!==kstDate())saleReset();mySale.t+=price;mySale.n++;SALES.set(myId,{t:mySale.t,n:mySale.n});pubR('sale/'+saleDay+'/'+myId,{t:mySale.t,n:mySale.n});renderSales(true)}
+function saleOnline(){if(mySale.n&&saleDay===kstDate())pubR('sale/'+saleDay+'/'+myId,{t:mySale.t,n:mySale.n});pub('salereq',{id:myId,d:kstDate()})}
+function onSalePeer(t,d){if(!d||typeof d!=='object')return;
+  if(t==='salesync'){if(d.d!==kstDate()||!Array.isArray(d.e))return;saleSyncSeen=Date.now();let ch2=false;for(const r of d.e.slice(0,300)){if(!Array.isArray(r))continue;const [id,tt,nn]=r;if(typeof id!=='string'||!/^[a-z0-9]{4,16}$/.test(id))continue;const v={t:Math.max(0,Math.min(1e7,Number(tt)||0)),n:Math.max(0,Math.min(1e4,Number(nn)||0))},p=SALES.get(id);if(!p||v.t>p.t||v.n>p.n){SALES.set(id,v);ch2=true}}if(ch2)renderSales();return}
+  if(t==='salereq'&&d.id!==myId&&SALES.size){const ask=Date.now();setTimeout(()=>{if(saleSyncSeen>ask)return;pub('salesync',{d:kstDate(),e:[...SALES.entries()].map(([k,v])=>[k,v.t,v.n])})},300+Math.random()*1500)}}
+setInterval(()=>{if(kstDate()!==saleDay)saleReset()},20000);
 const gbIn=$('#gbIn');gbIn.addEventListener('keydown',e=>e.stopPropagation());gbIn.addEventListener('keyup',e=>e.stopPropagation());
 const gbQ=[];
 function gbSend(eid,o){if(live&&ch){pubR('gb/'+o.day+'/'+eid,{n:o.n,m:o.m,t:o.t,id:o.id});pub('gbsync',{d:o.day,e:[[eid,o.n,o.m,o.t,o.id]]});return true}return false}
@@ -1855,7 +1872,7 @@ $('#enter').addEventListener('click',()=>{
   entered=true;enteredAt=performance.now();myJoin=Date.now();yaw=Math.PI;$('#intro').classList.add('hide');
   startAudio();if(actx&&actx.state==='suspended')actx.resume();
   if(cash<BASE_CASH){const gift=BASE_CASH-cash;cash=BASE_CASH;saveCash();setTimeout(()=>{toast(`입장 기본금 ${won(BASE_CASH)}이 채워졌어요`);floatText('+'+won(gift),player.x,1.9,player.z)},1200)}
-  sendPresence(true);lobbyBeat();updateCount();renderCash();$('#gbCh').textContent=CH_NAME[chSel];renderSip();renderChuru();
+  sendPresence(true);lobbyBeat();updateCount();renderCash();renderSales();$('#gbCh').textContent=CH_NAME[chSel];renderSip();renderChuru();
   hashEv();if(pendingEv){const ev=pendingEv;pendingEv=null;setTimeout(()=>{try{localStorage.setItem('uhwa-ev-'+kstDate()+'-'+ev,'1')}catch(e){}fireClock(ev)},900)}else checkClockEvents();
 });
 
