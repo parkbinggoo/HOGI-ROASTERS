@@ -12,12 +12,15 @@
 html,body{margin:0;height:100%;overflow:hidden;background:#1c1a22;font-family:'Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic',system-ui,sans-serif;color:var(--cream)}
 #c{position:fixed;left:0;top:var(--vvt,0px);width:100%;height:var(--vvh,100%);display:block;touch-action:none}
 #labels{position:fixed;left:0;top:var(--vvt,0px);width:100%;height:var(--vvh,100%);pointer-events:none;overflow:hidden}
+#shopPop{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%) scale(.95);z-index:12;width:min(300px,calc(100% - 40px));padding:22px 20px 18px;border-radius:20px;background:rgba(30,30,32,.95);border:1px solid rgba(246,238,227,.18);text-align:center;color:var(--cream);opacity:0;pointer-events:none;transition:all .2s}#shopPop.on{opacity:1;pointer-events:auto;transform:translate(-50%,-50%)}#shopPop .ic{font-size:30px}#shopPop .q{font-weight:900;letter-spacing:.06em;font-size:17px;margin:4px 0 6px}#shopPop .s{font-size:12.5px;opacity:.75;line-height:1.55;margin-bottom:14px}#shopPop a{display:block;padding:11px 0;border-radius:12px;background:#03c75a;color:#fff;font-weight:700;text-decoration:none;font-size:14px}#shopPop .u{font-size:10.5px;opacity:.45;margin-top:8px}#shopPop .x{position:absolute;right:10px;top:8px;background:none;border:none;color:var(--cream);opacity:.6;font-size:18px;cursor:pointer}
 #pipNote{display:none;position:fixed;inset:0;z-index:20;background:#1d1714;color:var(--cream);flex-direction:column;align-items:center;justify-content:center;gap:14px;font-size:15px}#pipNote.on{display:flex}#pipNote button{font:inherit;font-size:13px;border:none;border-radius:12px;padding:9px 16px;background:#e8b64c;color:#2b211d;font-weight:700;cursor:pointer}
 .lbl{position:absolute;left:0;top:0;text-align:center;white-space:nowrap;will-change:transform}
 .lbl .nm{display:inline-block;font-size:12px;padding:2px 8px;border-radius:10px;background:rgba(43,33,29,.62);color:var(--cream)}
 .lbl.me .nm{background:rgba(200,64,46,.88)}
 .lbl .bub{display:none;max-width:200px;white-space:normal;margin:0 auto 5px;padding:6px 10px;border-radius:12px;background:var(--cream);color:var(--ink);font-size:13px;line-height:1.35;box-shadow:0 3px 10px rgba(0,0,0,.25);word-break:keep-all;overflow-wrap:anywhere}
-.lbl .bub.on{display:block}
+.lbl .bub.on{display:block}.lbl .bub.emo{font-size:26px;line-height:1.1;padding:4px 10px}
+#emoBar{display:none;flex:1;gap:6px;justify-content:center}body.emo #emoBar{display:flex}body.emo #chat,body.emo #pinBtn,body.emo #tGB{display:none!important}
+#emoBar button{flex:1;max-width:56px;font-size:22px;line-height:1;padding:6px 0;border-radius:12px;border:1px solid rgba(246,238,227,.2);background:rgba(43,33,29,.72);cursor:pointer;backdrop-filter:blur(6px)}#emoBar button:active{transform:scale(.92)}
 .lbl.npc .bub{background:rgba(255,250,242,.66);box-shadow:0 2px 6px rgba(0,0,0,.12);backdrop-filter:blur(3px)}
 .lbl .pin{display:none;width:max-content;max-width:190px;margin:0 auto 4px;padding:3px 9px;border-radius:11px;background:#ffe9a8;color:#3a2a10;font-size:12px;font-weight:500;border:1px dashed rgba(120,80,20,.45);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;box-shadow:0 2px 6px rgba(0,0,0,.18)}
 .lbl .pin.on{display:block}
@@ -137,7 +140,7 @@ body.touch #log{bottom:280px}
 <div class="sndPop" id="gbPop"><div class="sp-t">📖 오늘의 방명록 <span id="gbCh" style="font-weight:400;opacity:.6;font-size:11px"></span></div><div class="sp-s">이 채널 모두가 함께 봐요 · 한국 시간 자정에 새 페이지 <span id="gbSt"></span></div><div id="gbList"></div><form id="gbForm" autocomplete="off"><input id="gbIn" maxlength="100" placeholder="한 줄 남기기 (100자)"><button>남기기</button></form></div>
 <div class="sndPop" id="ambPop"><div class="sp-t">바깥 소리</div><div class="sp-s">낮엔 새소리 · 밤엔 풀벌레</div><label class="vrow">볼륨<input type="range" id="aVol" min="0" max="100" step="1"><b id="aVolV"></b></label></div>
 <div id="log"></div>
-<div id="pipNote"><div>🪟 카페가 작은 창(PiP)에서 열려 있어요</div><button id="pipBack">여기로 돌아오기</button></div><div id="hint"></div><div id="toast"></div><div id="banner"><div class="big"></div><div class="sub"></div></div><div id="timePop" style="position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);padding:20px 22px 18px;border-radius:20px;background:rgba(43,33,29,.95);border:1px solid rgba(246,238,227,.18);text-align:center;z-index:9;width:min(320px,calc(100% - 40px));display:none"><button class="x" id="tpX">✕</button><div class="q" style="font-family:'Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic',sans-serif;font-size:17px;margin-bottom:4px">시간대 바꾸기</div><div class="s" id="tpMsg" style="font-size:12.5px;opacity:.75;margin-bottom:14px">코드를 입력하면 이 채널 모두에게 적용돼요</div><div id="tpLock"><input id="tpCode" type="password" inputmode="numeric" maxlength="4" placeholder="····" autocomplete="off"></div><div class="row" id="tpRow" style="display:none;gap:8px"></div></div><div id="offPop"><div class="q">오늘도 수고했어요</div><div class="s">퇴근할까요, 조금만 더 할까요?</div><div class="row"><button id="goHome">🌸 퇴근한다</button><button id="stay">🌙 야근한다</button></div></div>
+<div id="shopPop"><button class="x" id="shopX">✕</button><div class="ic">☕</div><div class="q">HOGI ROASTERS 원두</div><div class="s">매장에서 직접 볶은 원두를<br>스마트스토어에서 만나보세요</div><a id="shopGo" href="https://smartstore.naver.com/hogi_roasters" target="_blank" rel="noopener">🛒 원두 구매하러 가기</a><div class="u">smartstore.naver.com/hogi_roasters</div></div><div id="pipNote"><div>🪟 카페가 작은 창(PiP)에서 열려 있어요</div><button id="pipBack">여기로 돌아오기</button></div><div id="hint"></div><div id="toast"></div><div id="banner"><div class="big"></div><div class="sub"></div></div><div id="timePop" style="position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);padding:20px 22px 18px;border-radius:20px;background:rgba(43,33,29,.95);border:1px solid rgba(246,238,227,.18);text-align:center;z-index:9;width:min(320px,calc(100% - 40px));display:none"><button class="x" id="tpX">✕</button><div class="q" style="font-family:'Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic',sans-serif;font-size:17px;margin-bottom:4px">시간대 바꾸기</div><div class="s" id="tpMsg" style="font-size:12.5px;opacity:.75;margin-bottom:14px">코드를 입력하면 이 채널 모두에게 적용돼요</div><div id="tpLock"><input id="tpCode" type="password" inputmode="numeric" maxlength="4" placeholder="····" autocomplete="off"></div><div class="row" id="tpRow" style="display:none;gap:8px"></div></div><div id="offPop"><div class="q">오늘도 수고했어요</div><div class="s">퇴근할까요, 조금만 더 할까요?</div><div class="row"><button id="goHome">🌸 퇴근한다</button><button id="stay">🌙 야근한다</button></div></div>
 <div id="joy"><div id="knob"></div></div>
 <div id="bar">
   <button class="act" data-a="sip" id="sipBtn"><b>1</b>☕ 주문</button>
@@ -147,7 +150,7 @@ body.touch #log{bottom:280px}
   <button class="act" id="toyBtn" style="display:none"><b>5</b>🪶 놀이 시작</button>
   <div id="actPop"><div class="main"><div class="mt">무엇을 할까요?</div><button data-x="read"><b>1</b><span class="rl">📖 책 읽기</span><small class="rs">책장에서 골라요</small></button><button data-x="work"><b>2</b>💻 노트북 작업<small>빈자리 · 캐쉬 적립</small></button><button data-x="job"><b>3</b><span class="jl">🧑‍🍳 알바하기</span><small class="js">10초마다 800원 · 1명만</small></button><button data-x="swap" class="swp" style="display:none"><b>4</b>📚 다른 책 고르기</button></div><div class="books"><div class="mt">어떤 책을 읽을까요?</div><div class="bgrid"></div></div></div>
   <div id="menuPop"><div class="mt">무엇을 주문할까요? <span id="mCash"></span></div><button data-d="ha"><b>1</b>☕ 핫 아메리카노<small></small></button><button data-d="ia"><b>2</b>🧊 아이스 아메리카노<small></small></button><button data-d="hl"><b>3</b>🥛 핫 라떼<small></small></button><button data-d="il"><b>4</b>🥤 아이스 라떼<small></small></button><button data-d="im"><b>5</b>🧋 아이스 밀크티<small></small></button><button data-d="mt"><b>6</b>🍵 아이스 말차라떼<small></small></button><button data-d="fi"><b>7</b>🧈 휘낭시에<small></small></button><button data-d="cr"><b>8</b>🌀 시나몬롤<small></small></button><button data-d="et"><b>9</b>🥧 에그타르트<small></small></button><button data-d="cu"><b>0</b>🐟 츄르 1개<small></small></button><button data-d="ty"><b>T</b>🪶 고양이 장난감<small></small></button></div>
-  <form id="chatf" autocomplete="off"><input id="chat" maxlength="80" placeholder="Enter 로 말하기 · 📌 로 고정"><button type="button" id="pinBtn" title="입력한 말을 머리 위에 고정 (비우고 누르면 해제)">📌</button></form>
+  <form id="chatf" autocomplete="off"><input id="chat" maxlength="80" placeholder="Enter 로 말하기 · 📌 로 고정"><span id="emoBar"></span><button type="button" id="pinBtn" title="입력한 말을 머리 위에 고정 (비우고 누르면 해제)">📌</button></form>
 </div>
 <div id="intro">
   <div class="card">
@@ -636,7 +639,7 @@ const floorLights=[],floorGlow=[];
   const L=new THREE.PointLight('#ffd7a6',.5,4,2);L.position.set(wx-.3,1.72,zc);scene.add(L);floorLights.push(L);
   COL.push([wx-.5,wx,zc-1.05,zc+1.05])})();
 // ── black coffee roaster (right of the barista, east wall) with silver ducts up to the ceiling ──
-const ROASTER={x:7.25,z:4.45};let roastArms=null;
+const ROASTER={x:7.25,z:4.45},SHOP_URL='https://smartstore.naver.com/hogi_roasters';let roastArms=null,roasterHit=null;
 (function(){const X=ROASTER.x,Z=ROASTER.z,blk=M('#161718',{roughness:.45,metalness:.35}),blk2=M('#232527',{roughness:.5,metalness:.3}),steel=M('#c9ccd0',{roughness:.3,metalness:.85});
   const ductTex=canvasTex(32,64,(g,w,h)=>{g.fillStyle='#c7cace';g.fillRect(0,0,w,h);for(let y=0;y<h;y+=8){g.fillStyle='#9ea2a7';g.fillRect(0,y,w,3);g.fillStyle='#e6e8ea';g.fillRect(0,y+4,w,1)}},[3,10]);const duct=M('#ffffff',{map:ductTex,roughness:.35,metalness:.7});
   const D=(x1,y1,z1,x2,y2,z2,r)=>{const dx=x2-x1,dy=y2-y1,dz=z2-z1,len=Math.hypot(dx,dy,dz),m=add(new THREE.CylinderGeometry(r,r,len,14,1,true),duct,(x1+x2)/2,(y1+y2)/2,(z1+z2)/2);m.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),new THREE.Vector3(dx,dy,dz).normalize());m.material.side=THREE.DoubleSide;return m};
@@ -661,7 +664,8 @@ const ROASTER={x:7.25,z:4.45};let roastArms=null;
   const Hc=H-.12;D(X+.25,1.3,Z,X+.25,Hc,Z,.08);D(X+.15,1.53,Z+.82,X+.15,Hc,Z+.82,.09);
   D(X+.25,Hc,Z,X+.25,Hc,Z+.82,.08);D(X+.15,Hc,Z+.82,W,Hc,Z+.82,.1);D(X+.25,Hc,Z,X+.25,Hc,Z-1.2,.07);D(X+.25,Hc,Z-1.2,W,Hc,Z-1.2,.07);
   for(const [x,z] of [[X+.25,Z],[X+.25,Z+.82],[X+.25,Z-1.2]]){box(.06,.12,.06,steel,x,H-.06,z,null,true)}
-  COL.push([X-1.32,W,Z-.48,Z+1.0])})();
+  COL.push([X-1.32,W,Z-.48,Z+1.0]);
+  roasterHit=new THREE.Mesh(new THREE.BoxGeometry(1.6,2.1,1.6),new THREE.MeshBasicMaterial({visible:false}));roasterHit.position.set(X-.5,1.05,Z+.25);scene.add(roasterHit)})();
 // cat food & water bowls beside the indoor bench, next to the plant
 const BOWL={food:{x:-3.32,z:4.42,bx:-3.32,bz:4.82},water:{x:-2.88,z:4.42,bx:-2.88,bz:4.82}};
 (function(){const matM=M('#c9b48f',{roughness:.95});const mt=add(new THREE.PlaneGeometry(.8,.42),matM,-3.1,.004,4.82,null,true);mt.rotation.x=-Math.PI/2;mt.receiveShadow=true;
@@ -1264,6 +1268,10 @@ function buildDog(){const g=new THREE.Group(),fur=M('#cf9446',{roughness:.95}),l
 const dog=buildDog();dog.g.position.set(DOG.x,0,DOG.z);dog.g.rotation.y=DOG.r;scene.add(dog.g);COL.push([DOG.x-.32,DOG.x+.32,DOG.z-.45,DOG.z+.5]);
 const dogLbl=makeLabel(false);dogLbl.el.classList.add('cat');dogLbl.n.textContent='보리 🐶';
 const dogProxy={position:new THREE.Vector3(DOG.x,-.95,DOG.z)};
+function openShop(){if(pipWin){window.open(SHOP_URL,'_blank','noopener');return}closeMenu();$('#shopPop').classList.add('on');sfx('ding')}
+$('#shopX').addEventListener('click',()=>$('#shopPop').classList.remove('on'));$('#shopGo').addEventListener('click',()=>setTimeout(()=>$('#shopPop').classList.remove('on'),300));
+document.addEventListener('pointerdown',e=>{if(!e.target.closest('#shopPop'))$('#shopPop').classList.remove('on')},true);
+const shopLbl=makeLabel(false);shopLbl.el.classList.add('npc','cat');shopLbl.n.textContent='☕ 원두 구매';const shopProxy={position:new THREE.Vector3(ROASTER.x-.3,.45,ROASTER.z)};
 function petDog(){if(!entered)return;closeMenu();const d=Math.hypot(player.x-DOG.x,player.z-DOG.z);if(player.s>=0)standUp();
   if(d<1.15){startDogPet();return}const l=d||1,tx=DOG.x+(player.x-DOG.x)/l*.8,tz=DOG.z+(player.z-DOG.z)/l*.8;
   moveTo={x:tx,z:tz,seat:-1,dog:true,best:Infinity,stuck:0};marker.position.set(tx,.015,tz);marker.material.opacity=.9}
@@ -1343,9 +1351,9 @@ function syncPeers(peers){
     o.tx=num(pr.x,-W,W,0);o.tz=num(pr.z,-D,D,0);o.tr=num(pr.r,-10,10,0);
     o.a=['sip','read','work','pet','order','yay','feed','bite','browse','bake','dish'].includes(pr.a)?pr.a:'';o.jb=pr.jb?1:0;o.tw=pr.tw?1:0;o.bk=Number.isInteger(pr.bk)&&BOOKS[pr.bk]?pr.bk:-1;o.ds=DESSERT[pr.ds]?pr.ds:'';o.dl=Number.isInteger(pr.dl)?clamp(pr.dl,0,BITES):BITES;o.cc=Number.isInteger(pr.cc)?clamp(pr.cc,0,40):0;o.pc=Number.isInteger(pr.pc)?pr.pc:-1;o.cry=pr.cry?1:0;o.pf=num(pr.pf,0,1e15,0);o.d=DRINK[pr.d]?pr.d:'ha';o.h=pr.h?1:0;o.l=Number.isInteger(pr.l)?clamp(pr.l,0,SIPS):SIPS;o.s=Number.isInteger(pr.s)&&SEATS[pr.s]?pr.s:-1;
     const nm=str(pr.n,24);if(nm!==o.name){o.name=nm;o.lbl.n.textContent=nm}
-    {const pn=typeof pr.pn==='string'?pr.pn.slice(0,30):'';if(pn!==o.pn){o.pn=pn;setPin(o.lbl,pn)}}
+    {const pn=typeof pr.pn==='string'&&!freeRoom()?pr.pn.slice(0,30):'';if(pn!==o.pn){o.pn=pn;setPin(o.lbl,pn)}}
     const mt=num(pr.mt,0,1e15,0),m=str(pr.m,80);
-    if(mt&&mt!==o.mt){o.mt=mt;if(m&&Date.now()-mt<15000){showBubble(o.lbl,m);logLine(nm,m)}}
+    if(mt&&mt!==o.mt){o.mt=mt;if(m&&Date.now()-mt<15000&&(!freeRoom()||EMO.includes(m))){showBubble(o.lbl,m);logLine(nm,m)}}
   }
   for(const [k,o] of remotes)if(!seen.has(k)){scene.remove(o.g);o.lbl.el.remove();remotes.delete(k)}
   updateCount();
@@ -1410,7 +1418,7 @@ function connectMQTT(){
       if(t.startsWith('st/')){if(d&&typeof d==='object'){delete d.m;delete d.mt;upsert(t.slice(3),d)}}
       else if(t==='chat'){if(d&&typeof d.id==='string')upsert(d.id,{m:d.m,mt:d.mt})}
       else if(t==='hi'){if(d&&d.id!==myId){sendPresence(true);onHi()}}
-      else if(t==='cats'||t==='feed'||t==='time'){handleExtra(t,d)}
+      else if(t==='cats'||t==='feed'||t==='time'||t==='cbite'){handleExtra(t,d)}
       else if(t==='gbreq'||t==='gbsync'){onGBPeer(t,d)}
       else if(t==='salereq'||t==='salesync'){onSalePeer(t,d)}
       else if(t.startsWith('bye/')){if(others.delete(t.slice(4))){emitPeers()}updateCount()}
@@ -1425,16 +1433,22 @@ updateCount();connectLobby();
 /* ---------- chat ---------- */
 const logEl=$('#log');
 function logLine(name,msg){const d=document.createElement('div');const i=document.createElement('i');i.textContent=name;d.append(i,document.createTextNode('  '+msg));logEl.appendChild(d);while(logEl.children.length>6)logEl.firstChild.remove();setTimeout(()=>{d.style.opacity='0';setTimeout(()=>d.remove(),1300)},14000)}
-function showBubble(lbl,msg){lbl.b.textContent=msg;lbl.b.classList.add('on');lbl.bubUntil=performance.now()+6500}
+const EMO=['😊','😂','😍','😢','😮'];
+function showBubble(lbl,msg){lbl.b.textContent=msg;lbl.b.classList.toggle('emo',EMO.includes(msg));lbl.b.classList.add('on');lbl.bubUntil=performance.now()+6500}
 const chatIn=$('#chat');
 player.pn='';
-function togglePin(){if(!entered)return;const t=chatIn.value.trim().slice(0,30);
+function togglePin(){if(!entered||freeRoom())return;const t=chatIn.value.trim().slice(0,30);
   if(t){player.pn=t;chatIn.value='';toast('📌 말풍선을 고정했어요 · 모두에게 보여요')}
   else if(player.pn){player.pn='';toast('📌 고정을 풀었어요')}
   else{toast('입력창에 쓰고 📌 을 누르면 머리 위에 고정돼요');chatIn.focus();return}
   setPin(player.lbl,player.pn);$('#pinBtn').classList.toggle('on',!!player.pn);sendPresence(true)}
 $('#pinBtn').addEventListener('pointerdown',e=>e.preventDefault());$('#pinBtn').addEventListener('click',e=>{e.preventDefault();togglePin()});
-function sendChat(){const m=chatIn.value.trim().slice(0,80);chatIn.value='';chatIn.blur();if(!m||!entered)return;showBubble(player.lbl,m);logLine(me.name,m);pub('chat',{id:myId,m,mt:Date.now()})}
+let emoLast=0;
+function sendEmo(e){if(!entered||!EMO.includes(e))return;if(Date.now()-emoLast<900)return;emoLast=Date.now();showBubble(player.lbl,e);player.lbl.bubUntil=performance.now()+3500;logLine(me.name,e);pub('chat',{id:myId,m:e,mt:Date.now()})}
+$('#emoBar').innerHTML=EMO.map(e=>`<button type="button" data-e="${e}">${e}</button>`).join('');
+$('#emoBar').querySelectorAll('button').forEach(b=>{b.addEventListener('pointerdown',ev=>ev.preventDefault());b.addEventListener('click',ev=>{ev.preventDefault();sendEmo(b.dataset.e)})});
+const freeRoom=()=>myCh===3;
+function sendChat(){if(freeRoom()){chatIn.value='';return}const m=chatIn.value.trim().slice(0,80);chatIn.value='';chatIn.blur();if(!m||!entered)return;showBubble(player.lbl,m);logLine(me.name,m);pub('chat',{id:myId,m,mt:Date.now()})}
 $('#chatf').addEventListener('submit',e=>{e.preventDefault();sendChat()});
 chatIn.addEventListener('keydown',e=>{e.stopPropagation();if(e.key==='Enter'){if(e.isComposing||e.keyCode===229)return;e.preventDefault();sendChat()}else if(e.key==='Escape'){chatIn.value='';chatIn.blur()}});
 
@@ -1596,7 +1610,7 @@ const keys={};
 addEventListener('keydown',e=>{
   if(document.activeElement===chatIn){if(e.key==='Escape')chatIn.blur();return}
   if(!entered)return;
-  if(e.key==='Enter'){e.preventDefault();chatIn.focus();return}
+  if(e.key==='Enter'){e.preventDefault();if(!freeRoom())chatIn.focus();return}
   const k=e.key.toLowerCase();keys[k]=true;
   if(menuOpen&&menuPop.classList.contains('bn')){const n=+k;if(n>=1&&n<=BEANS.length){placeOrder(beanFor,BEANS[n-1].k);return}if(k==='escape'||k==='backspace'){menuPop.classList.remove('bn');return}return}
   if(menuOpen){const dm={'1':'ha','2':'ia','3':'hl','4':'il','5':'im','6':'mt','7':'fi','8':'cr','9':'et','0':'cu','t':'ty'};if(dm[k]){setAction('sip',dm[k]);return}if(k==='escape'){closeMenu();return}}
@@ -1619,6 +1633,7 @@ function clickMove(e){
   if(!entered)return;
   const r=canvas.getBoundingClientRect();ndc.set((e.clientX-r.left)/r.width*2-1,-(e.clientY-r.top)/r.height*2+1);ray.setFromCamera(ndc,camera);
   if(ray.intersectObject(barista.g,true).length){goOrder();return}
+  if(roasterHit&&ray.intersectObject(roasterHit).length){openShop();return}
   if(ray.intersectObject(wcDoor).length){toast(pick(['🚻 화장실은 지금 사용 중이에요','🚻 똑똑… 사람이 있어요']));return}
   if(ray.intersectObject(dog.g,true).length){petDog();return}
   {const ci=catHit();if(ci>=0){if(player.churu>0)feedChuru(ci);else petCat(ci);return}}
@@ -1642,7 +1657,8 @@ function petCat(i){
   const tx=cp.x+(player.x-cp.x)/l*.62,tz=cp.z+(player.z-cp.z)/l*.62;
   moveTo={x:tx,z:tz,seat:-1,pet:true,petIdx:i,best:Infinity,stuck:0};marker.position.set(tx,.015,tz);marker.material.opacity=.9;
 }
-function startPet(i){if(player.a==='order')return;const cp=CATS[i].m.root.position;if(player.s<0)player.r=Math.atan2(cp.x-player.x,cp.z-player.z);player.a='pet';player.pc=i;petUntil=performance.now()+4000;petStart=performance.now();petWarned=false;actBtns.forEach(b=>b.classList.remove('on'));purr()}
+const petLog={};
+function startPet(i){if(player.a==='order')return;{const now=performance.now(),L=(petLog[i]||[]).filter(t=>now-t<30000);L.push(now);petLog[i]=L;if(L.length>=3){petLog[i]=[];setTimeout(()=>catBite(i),650)}}const cp=CATS[i].m.root.position;if(player.s<0)player.r=Math.atan2(cp.x-player.x,cp.z-player.z);player.a='pet';player.pc=i;petUntil=performance.now()+4000;petStart=performance.now();petWarned=false;actBtns.forEach(b=>b.classList.remove('on'));purr()}
 function spawnHeart(x,y,z){v3.set(x+rand(-.15,.15),y,z+rand(-.1,.1)).project(camera);if(v3.z>1)return;
   const h=document.createElement('span');h.className='heart';h.textContent=Math.random()<.8?'♥':'♡';h.style.setProperty('--p',`translate(${(v3.x*.5+.5)*VW()}px,${(-v3.y*.5+.5)*VH()}px) translate(-50%,-50%)`);labelsEl.appendChild(h);setTimeout(()=>h.remove(),1700)}
 function chaseCat(){ // walking to a cat that may be moving: keep re-aiming, arrive when close
@@ -1804,7 +1820,7 @@ function closePops(except){['#musPop','#ambPop','#gbPop'].forEach(id=>{if(id!==e
 $('#tMusic').addEventListener('click',e=>{e.stopPropagation();closePops('#musPop');$('#musPop').classList.toggle('show')});
 $('#tGB').addEventListener('click',e=>{e.stopPropagation();closePops('#gbPop');$('#gbPop').classList.toggle('show');renderGB()});
 const GB=new Map();let gbDay=kstDate(),gbLast=0;
-function onGB(rest,d,retained,topic){const [day,eid]=rest.split('/');if(!eid||!/^[a-z0-9]{4,40}$/.test(eid))return;
+function onGB(rest,d,retained,topic){if(freeRoom())return;const [day,eid]=rest.split('/');if(!eid||!/^[a-z0-9]{4,40}$/.test(eid))return;
   if(day!==kstDate()){if(d&&ch&&live)try{ch.publish(topic,'',{qos:1,retain:true})}catch(e){}return} // yesterday's page: tear it out
   if(!d){if(GB.delete(eid))renderGB();return}if(typeof d.m!=='string'||GB.has(eid))return;
   const e={n:String(d.n||'손님').slice(0,24),m:d.m.slice(0,100),t:Number(d.t)||0,id:String(d.id||'')};GB.set(eid,e);renderGB();
@@ -1900,7 +1916,7 @@ $('#enter').addEventListener('click',()=>{
     P=P_BASE+(chSel===1?'c1-'+h53('uhwa-ch1-topic:'+c):'c2-'+h53('uhwa-ch2-topic:'+c))+'/'}
   try{localStorage.setItem('uhwa-ch',String(chSel))}catch(e){}
   $('#chTag').textContent=(chSel===3?'🌿 ':'🔒 ')+CH_NAME[chSel];$('#tCh').style.display='';
-  myCh=chSel;connectMQTT();
+  myCh=chSel;document.body.classList.toggle('emo',chSel===3);connectMQTT();
   saveMe();scene.remove(player.g);player.g=makeChar(me.c,me.gd);player.g.position.set(player.x,0,player.z);player.g.rotation.y=player.r;
   player.lbl.n.textContent=me.name+' (나)';player.lbl.el.style.display='';
   entered=true;enteredAt=performance.now();myJoin=Date.now();yaw=Math.PI;$('#intro').classList.add('hide');
@@ -2009,7 +2025,19 @@ function playCat(c,dt,AV,now){const p=c.play,a=AV.find(q=>q.id===p.id);if(!a||!a
     if(p.t<0){c.y=0;p.stage='bat';p.t=rand(1.0,1.8)}return true}
   if(p.stage==='bat'){c.pose='bat';c.r=turnTo(c.r,face,dt*8);if(p.t<0){p.stage='crouch';p.t=rand(.8,1.7)}return true}
   return false}
+// cat bite: annoyed after 3 pets in a row -> lunge, nip, then dash away
+function applyBite(i,px,pz){const c=CATS[i];if(!c)return;const now=performance.now();c.play=null;c.plan=[];c.goal=null;c.dest=null;c.biteUntil=now+550;c.biteFrom={x:px,z:pz};c.runAway=true;c.bellyUntil=0;c.eatUntil=0}
+function catBite(i){const c=CATS[i];if(!c||!entered)return;const cp=c.m.root.position;if(Math.hypot(cp.x-player.x,cp.z-player.z)>1.8)return;
+  if(player.a==='pet')player.a='';petUntil=0;const say=pick(['아야! 😣','앗 물렸다 😖','아얏! 미안해…']);showBubble(player.lbl,say);player.lbl.bubUntil=performance.now()+3000;if(!freeRoom())pub('chat',{id:myId,m:say,mt:Date.now()});
+  toast(`${c.def.name}가 앙! 물고 도망갔어요 😾 (너무 많이 쓰다듬었나 봐요)`);floatText('앙!',cp.x,cp.y+.6,cp.z);
+  if(actx){const t=actx.currentTime,n=actx.createBufferSource(),b=actx.createBuffer(1,actx.sampleRate*.35|0,actx.sampleRate),d=b.getChannelData(0);for(let k=0;k<d.length;k++)d[k]=(Math.random()*2-1)*(1-k/d.length);n.buffer=b;const hp=actx.createBiquadFilter();hp.type='highpass';hp.frequency.value=2500;const g=actx.createGain();g.gain.value=.18;n.connect(hp);hp.connect(g);g.connect(master);n.start(t)}
+  player.r=Math.atan2(cp.x-player.x,cp.z-player.z);player.x-=Math.sin(player.r)*.18;player.z-=Math.cos(player.r)*.18;collide(player);
+  if(amCatHost())applyBite(i,player.x,player.z);else pub('cbite',{cat:i,id:myId,x:r2(player.x),z:r2(player.z)})}
 function thinkCat(c,dt,AV,now){
+  if(now<(c.biteUntil||0)){c.pose='pounce';c.r=turnTo(c.r,Math.atan2(c.biteFrom.x-c.x,c.biteFrom.z-c.z),dt*12);c.y=Math.max(0,c.y);return}
+  if(c.runAway){if(!c.plan.length&&!c.runSet){c.runSet=true;const ax=c.x-c.biteFrom.x,az=c.z-c.biteFrom.z,l=Math.hypot(ax,az)||1;catGo(c,freeNear(c.x+ax/l*3.6,c.z+az/l*3.6))}
+    if(stepCat(c,dt,2.5)){c.runAway=false;c.runSet=false;c.goal=null;c.timer=rand(6,10);c.idleT=0;c.sulkUntil=now+rand(15000,25000)}else if(c.y<.05)c.pose='run';return}
+  if(now<(c.sulkUntil||0)&&!c.plan.length){idlePose(c,dt,4,12);return} // sulking for a bit after the bite
   if(now<c.eatUntil){c.plan=[];c.pose='eat';return}
   if(c.play&&playCat(c,dt,AV,now))return;
   if(now<(c.bellyUntil||0)){ // belly-up nap: holds for about a minute, enjoys a belly rub
@@ -2109,7 +2137,7 @@ function onCatsMsg(d){
 }
 const FOLLOW_MS=60000;
 function applyFeed(i,by){const c=CATS[i];if(!c)return;const now=performance.now();c.eatUntil=now+2600;c.fedAt=now;c.plan=[];c.goal=null;c.pose='eat';c.dest=null;if(by){c.followId=by;c.followUntil=now+2600+FOLLOW_MS}}
-function handleExtra(t,d){if(t==='time'){onTimeMsg(d);return}if(t==='cats'){onCatsMsg(d);if(d&&Number.isInteger(d.tm))onTimeMsg({tm:d.tm,ta:d.ta,wx:d.wx,sync:1})}else if(t==='feed'&&d&&Number.isInteger(d.cat)&&d.id!==myId)applyFeed(d.cat,typeof d.id==='string'?d.id:null)}
+function handleExtra(t,d){if(t==='time'){onTimeMsg(d);return}if(t==='cats'){onCatsMsg(d);if(d&&Number.isInteger(d.tm))onTimeMsg({tm:d.tm,ta:d.ta,wx:d.wx,sync:1})}else if(t==='feed'&&d&&Number.isInteger(d.cat)&&d.id!==myId)applyFeed(d.cat,typeof d.id==='string'?d.id:null);else if(t==='cbite'&&d&&Number.isInteger(d.cat)&&CATS[d.cat]&&amCatHost())applyBite(d.cat,num(d.x,-16,16,0),num(d.z,-20,D,0))}
 function updateCats(dt,t){
   const host=amCatHost(),now=performance.now();
   if(host&&!wasHost)for(const c of CATS){c.plan=[];c.goal=null;c.dest=null;c.perch=c.y>.3?(Object.keys(PERCH).find(k=>Math.hypot(PERCH[k].x-c.x,PERCH[k].z-c.z)<.3)||null):null}
@@ -2199,7 +2227,7 @@ function loop(now,gen,once){
   const dt=Math.min(.05,(now-last)/1000);last=now;const t=now/1000;
   applyEnv(dt);updateWeather(dt,t);updatePlayer(dt);updateRemotes(dt,t);updateCamera(dt);
   if(++frame%8===0){drawWindow(cur,t);drawSky(cur)}
-  if(player.a==='pet'&&now>petUntil)player.a='';if(player.a==='yay'&&now>yayUntil)player.a='';updatePetals(dt,t);updateOrder(dt);updateSip(dt);updateBite(dt);renderDessert();updateWork(dt);updateJob(dt);updateToy();updateBarista(dt,t);updateNPC(dt,t);npcChatter(dt);if(roastArms)roastArms.rotation.y+=dt*1.1;
+  if(player.a==='pet'&&now>petUntil)player.a='';if(player.a==='yay'&&now>yayUntil)player.a='';updatePetals(dt,t);updateOrder(dt);updateSip(dt);updateBite(dt);renderDessert();updateWork(dt);updateJob(dt);updateToy();updateBarista(dt,t);updateNPC(dt,t);npcChatter(dt);if(roastArms)roastArms.rotation.y+=dt*1.1;placeLabel(shopLbl,shopProxy,performance.now());
   updateCats(dt,t);
   if(player.a==='pet'){const c=CATS[player.pc];if(c&&!petWarned&&now-petStart>1100&&c.pose!=='happy'&&c.pose!=='bellyp'){petWarned=true;player.a='';player.pc=-1;toast(c.def.kind==='avoid'?`${c.def.name}는 손길을 피해요 · 잠들었을 때 살금살금`:`${c.def.name}는 아직 낯을 가려요`)}}
   if(player.a!=='pet')player.pc=-1;
@@ -2223,7 +2251,8 @@ async function openPip(){
       {const d=w.document,f=d.createElement('div'),i=d.createElement('input');i.autocomplete='off';i.maxLength=80;i.placeholder='💬 여기에 쓰고 Enter';i.setAttribute('enterkeyhint','send');
         f.style.cssText='position:fixed;left:8px;right:8px;bottom:8px;margin:0;z-index:5';
         i.style.cssText="width:100%;box-sizing:border-box;font:13px 'Noto Sans KR','Apple SD Gothic Neo',sans-serif;padding:8px 12px;border-radius:12px;border:1px solid rgba(246,238,227,.3);background:rgba(43,33,29,.78);color:#f6eee3;outline:none;backdrop-filter:blur(6px)";
-        f.appendChild(i);d.body.appendChild(f);
+        if(freeRoom()){f.style.cssText+=';display:flex;gap:6px;justify-content:center';for(const em of EMO){const bb=d.createElement('button');bb.textContent=em;bb.style.cssText='flex:1;max-width:60px;font-size:22px;padding:6px 0;border-radius:12px;border:1px solid rgba(246,238,227,.3);background:rgba(43,33,29,.78);cursor:pointer';bb.addEventListener('click',()=>sendEmo(em));f.appendChild(bb)}d.body.appendChild(f)}
+        else{f.appendChild(i);d.body.appendChild(f)}
         i.addEventListener('keydown',e=>{e.stopPropagation();if(e.key==='Escape'){i.blur();return}if(e.key!=='Enter'||e.isComposing||e.keyCode===229)return;e.preventDefault();const m=i.value.trim();if(!m)return;chatIn.value=m;sendChat();i.value=''});}
       for(const ev of ['keydown','keyup'])w.addEventListener(ev,e=>{if(e.target&&e.target.tagName==='INPUT')return;window.dispatchEvent(new KeyboardEvent(ev,{key:e.key,code:e.code,keyCode:e.keyCode}))});
       w.addEventListener('resize',resize);w.addEventListener('pagehide',closedPip);
