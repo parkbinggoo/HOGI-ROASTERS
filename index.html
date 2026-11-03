@@ -1124,6 +1124,7 @@ function animChar(g,st,t,moving,dt){
   else if(st.a==='brew'){const ty=Math.sin(tt*9)*.12;aLx=-1.15+ty;aRx=-1.2-ty;aLz=.25;aRz=-.3;hx=.2+Math.sin(tt*1.5)*.05;hz=Math.sin(tt*.8)*.1;lean=.08}
   else if(st.a==='read'){aLx=aRx=-1.15;aLz=.42;aRz=-.42;hx=.34+Math.sin(tt*.7)*.04;hz=Math.sin(tt*.35)*.06;lean=.1;
     if((tt%6)<.35){aRx=-1.5;aRz=-.15}} // turning a page
+  else if(st.a==='reach'){const k=Math.sin(tt*1.6);aRx=-2.55+k*.12;aRz=-.15;aLx=-.9+Math.sin(tt*2.1)*.1;aLz=.25;hx=-.3;hz=Math.sin(tt*.9)*.06;lean=-.04}
   else if(st.a==='talk'){const g1=Math.sin(tt*3.1);aRx=-.75+g1*.28;aRz=-.32+Math.cos(tt*2.3)*.12;aLx=-.55+Math.sin(tt*2.2+1)*.12;aLz=.25;hx=-.04+Math.sin(tt*1.7)*.05;hz=Math.sin(tt*1.3)*.09;mouthS=(tt*5%1)<.5?1.7:1;lean=.08}
   else if(st.a==='listen'){hx=.06+Math.max(0,Math.sin(tt*2.4))*.1;hz=.12+Math.sin(tt*.8)*.04;aLx=aRx=-.7;aLz=.3;aRz=-.3;lean=.1;eyesShut=(tt%5)<.25}
   else if(st.a==='dish'){const c=tt*9;aLx=-1.05+Math.sin(c*.5)*.06;aLz=.3;aRx=-1.12+Math.sin(c)*.14;aRz=-.32+Math.cos(c)*.16;hx=.36;lean=.16;hz=Math.sin(tt*.9)*.04}
@@ -1178,8 +1179,8 @@ const barista={g:makeChar(1,'m'),lbl:makeLabel(false),a:'wipe',s:-1,h:0};
   const cap=new THREE.Mesh(new THREE.SphereGeometry(1,26,12,0,Math.PI*2,0,Math.PI*.44),capM);cap.scale.set(SK[0]*1.08,SK[1]*1.1,SK[2]*1.08);cap.position.y=CY;cap.rotation.x=-.12;u.head.add(cap);
   const brim=new THREE.Mesh(new THREE.CylinderGeometry(.18,.18,.014,20,1,false,-Math.PI/2,Math.PI),capM);brim.position.set(0,CY+SK[1]*.42,SK[2]*.72);brim.rotation.x=.18;brim.scale.z=.85;u.head.add(brim);
 })();
-const bStand=new THREE.Group();bStand.position.set(6.7,.38,-1.6);scene.add(bStand);bStand.add(barista.g);barista.g.rotation.y=-Math.PI/2;
-box(1.3,.38,5.3,M('#7a5434',{roughness:.8}),6.95,.19,-.45);const PLAT=[6.25,7.6,-3.1,2.25];COL.push(PLAT);barista.lbl.n.textContent='바리스타';barista.lbl.n.style.background='rgba(43,69,151,.5)';barista.lbl.el.classList.add('npc');
+const bStand=new THREE.Group();bStand.position.set(0,.38,0);scene.add(bStand);bStand.add(barista.g);barista.g.position.set(6.7,0,-1.6);barista.g.rotation.y=-Math.PI/2;
+box(1.3,.38,5.3,M('#7a5434',{roughness:.8}),6.95,.19,-.45);const PLAT=[6.25,7.6,-3.1,2.25];COL.push(PLAT);barista.lbl.n.textContent='호기';barista.lbl.n.style.background='rgba(43,69,151,.5)';barista.lbl.el.classList.add('npc');
 COL.push([6.45,6.95,-1.85,-1.35]);
 const cCups={};for(const k in DRINK){cCups[k]=buildDrink(k);cCups[k].position.set(5.45,1.13,-1.6);cCups[k].visible=false;scene.add(cCups[k])}
 for(const k in DESSERT){cCups[k]=buildDessert(k);cCups[k].position.set(5.45,1.065,-1.6);cCups[k].visible=false;scene.add(cCups[k])}
@@ -1268,11 +1269,21 @@ function updateNPC(dt,t){const now=performance.now();
   if(petted){DOG.heartT-=dt;if(DOG.heartT<0){DOG.heartT=.4;spawnHeart(DOG.x,.75,DOG.z+.1)}}
   dogProxy.position.set(DOG.x,-.85,DOG.z);placeLabel(dogLbl,dogProxy,now)}
 const bProxy={position:new THREE.Vector3()};
+/* barista 호기: works around the bar on a shared schedule (same for everyone); comes back to the till for orders */
+const BSPOT={home:{x:6.7,z:-1.6,r:-Math.PI/2,a:'wipe'},machine:{x:6.7,z:-2.55,r:-Math.PI/2,a:'brew'},grinder:{x:6.7,z:-.95,r:-Math.PI/2,a:'brew'},pass:{x:6.7,z:.15,r:-Math.PI/2,a:'wipe'},
+  shelf:{x:7.25,z:-.5,r:Math.PI/2,a:'reach'},shelf2:{x:7.25,z:-2.1,r:Math.PI/2,a:'reach'},sink:{x:6.72,z:.56,r:Math.PI/2,a:'dish'},oven:{x:6.72,z:1.5,r:Math.PI/2,a:'bake'}};
+const BROUTE=['home','machine','shelf','grinder','sink','home','pass','oven','shelf2','machine','home','grinder'];
+let baristaSummon=0;const bPos={x:6.7,z:-1.6};
+function baristaTarget(){let busy=(order&&order.stage!=='walk')||menuOpen;for(const o of remotes.values())if(o.a==='order')busy=true;
+  if(busy||performance.now()<baristaSummon)return {sp:BSPOT.home,busy};
+  let jb=!!player.job;for(const o of remotes.values())if(o.jb)jb=true;
+  const slot=Math.floor(Date.now()/9000);let k=BROUTE[hsh(slot)%BROUTE.length];if(jb&&(k==='sink'||k==='oven'))k='home';return {sp:BSPOT[k],busy:false}}
 function updateBarista(dt,t){
-  let busy=order&&order.stage==='brew';for(const o of remotes.values())if(o.a==='order')busy=true;
-  barista.a=busy?'brew':'wipe';
-  const want=busy?-Math.PI*.82:-Math.PI/2;barista.g.rotation.y+=(want-barista.g.rotation.y)*Math.min(1,dt*4);
-  animChar(barista.g,barista,t,false,dt);bProxy.position.set(6.7,.38+barista.g.position.y,-1.6);placeLabel(barista.lbl,bProxy,performance.now());
+  const {sp,busy}=baristaTarget(),dx=sp.x-bPos.x,dz=sp.z-bPos.z,d=Math.hypot(dx,dz);let moving=false;
+  if(d>.04){const st=Math.min(d,1.25*dt);bPos.x+=dx/d*st;bPos.z+=dz/d*st;moving=true;barista.a='';const want=Math.atan2(dx,dz);let dr=want-barista.g.rotation.y;dr=Math.atan2(Math.sin(dr),Math.cos(dr));barista.g.rotation.y+=dr*Math.min(1,dt*10)}
+  else{barista.a=busy?'brew':sp.a;const want=busy?-Math.PI*.82:sp.r;let dr=want-barista.g.rotation.y;dr=Math.atan2(Math.sin(dr),Math.cos(dr));barista.g.rotation.y+=dr*Math.min(1,dt*5)}
+  barista.g.position.x=bPos.x;barista.g.position.z=bPos.z;
+  animChar(barista.g,barista,t,moving,dt);bProxy.position.set(bPos.x,.38+barista.g.position.y,bPos.z);placeLabel(barista.lbl,bProxy,performance.now());
 }
 
 /* ---------- petals for clocking out ---------- */
@@ -1614,7 +1625,7 @@ function spawnHeart(x,y,z){v3.set(x+rand(-.15,.15),y,z+rand(-.1,.1)).project(cam
 function chaseCat(){ // walking to a cat that may be moving: keep re-aiming, arrive when close
   if(!(moveTo.feed||moveTo.pet))return false;const idx=moveTo.feed?moveTo.feedIdx:moveTo.petIdx;const cp=CATS[idx].m.root.position;const dc=Math.hypot(cp.x-player.x,cp.z-player.z);
   if(dc<.95){arrive();return true}const l=dc||1;moveTo.x=cp.x+(player.x-cp.x)/l*.6;moveTo.z=cp.z+(player.z-cp.z)/l*.6;marker.position.set(moveTo.x,.015,moveTo.z);return false}
-function goOrder(){
+function goOrder(){baristaSummon=performance.now()+20000;
   if(!entered)return;
   if(order){toast(order.stage==='ready'?'카운터에서 음료를 받아가세요':'바리스타가 만들고 있어요');return}
   if(Math.hypot(player.x-PICK.x,player.z-PICK.z)<1.3){if(player.s>=0)standUp();player.r=Math.PI/2;greetMenu();return}
