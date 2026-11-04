@@ -24,6 +24,10 @@ html,body{margin:0;height:100%;overflow:hidden;background:#1c1a22;font-family:'N
 .lbl.npc .bub{background:rgba(255,250,242,.66);box-shadow:0 2px 6px rgba(0,0,0,.12);backdrop-filter:blur(3px)}
 .lbl .pin{display:none;width:max-content;max-width:190px;margin:0 auto 4px;padding:3px 9px;border-radius:11px;background:#ffe9a8;color:#3a2a10;font-size:12px;font-weight:500;border:1px dashed rgba(120,80,20,.45);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;box-shadow:0 2px 6px rgba(0,0,0,.18)}
 .lbl .pin.on{display:block}
+.lbl .nte{display:none;width:max-content;margin:0 auto 3px;padding:2px 8px;border-radius:9px;background:#ffd1e0;color:#5a2a3a;font-size:11px;font-weight:700;box-shadow:0 2px 5px rgba(0,0,0,.15);animation:wob 1.6s ease-in-out infinite}.lbl .nte.on{display:block}@keyframes wob{0%,100%{transform:rotate(-2deg)}50%{transform:rotate(2deg)}}
+#myNotes{position:fixed;left:16px;bottom:calc(64px + var(--kb,0px));z-index:6;border:none;border-radius:14px;padding:7px 12px;background:#ffd1e0;color:#5a2a3a;font:inherit;font-size:12.5px;font-weight:700;cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,.25)}
+#stickPop{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%) scale(.95);z-index:12;width:min(300px,calc(100% - 40px));padding:20px 18px 16px;border-radius:20px;background:rgba(43,33,29,.95);border:1px solid rgba(246,238,227,.18);color:var(--cream);opacity:0;pointer-events:none;transition:all .2s}#stickPop.on{opacity:1;pointer-events:auto;transform:translate(-50%,-50%)}#stickPop .x{position:absolute;right:10px;top:8px;background:none;border:none;color:var(--cream);opacity:.6;font-size:18px;cursor:pointer}#stickPop .who{font-weight:900;font-size:16px;margin-bottom:2px}#stickPop .s{font-size:11.5px;opacity:.65;margin-bottom:10px}#stickPop .in{display:flex;gap:6px;margin-top:10px}#stickPop input{flex:1;min-width:0;font:inherit;font-size:13px;padding:8px 10px;border-radius:10px;border:1px solid rgba(246,238,227,.25);background:rgba(0,0,0,.25);color:var(--cream);outline:none}#stickPop .in button{border:none;border-radius:10px;background:#ffd1e0;color:#5a2a3a;font:inherit;font-weight:700;font-size:12.5px;padding:0 12px;cursor:pointer}#stickPop .fr{font-size:12px;opacity:.7;margin-top:8px}
+.nl{display:flex;flex-direction:column;gap:6px;max-height:min(40vh,260px);overflow:auto}.nl .ne{display:flex;align-items:center;gap:8px;background:#fff6c2;color:#3a2a10;border-radius:6px;padding:7px 9px;font-size:12.5px;box-shadow:0 2px 4px rgba(0,0,0,.2);transform:rotate(-.6deg)}.nl .ne:nth-child(2n){background:#ffe0ea;transform:rotate(.6deg)}.nl .ne span{flex:1;word-break:keep-all;overflow-wrap:anywhere}.nl .ne i{font-style:normal;font-size:10.5px;opacity:.6;white-space:nowrap}.nl .ne button{border:none;border-radius:8px;background:#2b211d;color:#fff;font:inherit;font-size:11px;padding:4px 8px;cursor:pointer}.nl .empty{font-size:12px;opacity:.6;text-align:center;padding:10px 0}#notePop .all{margin-top:10px;width:100%;border:1px solid rgba(246,238,227,.25);background:none;color:var(--cream);font:inherit;font-size:12px;padding:7px 0;border-radius:10px;cursor:pointer}
 #pinBtn{flex:none;margin-left:6px;border:1px solid rgba(246,238,227,.2);background:rgba(43,33,29,.72);color:var(--cream);border-radius:12px;padding:0 11px;font-size:14px;cursor:pointer;backdrop-filter:blur(6px)}#pinBtn.on{background:#e8b64c;border-color:#e8b64c}
 .lbl .stl{display:none;width:max-content;margin:0 auto 3px;font-size:10.5px;padding:1px 7px;border-radius:9px;background:rgba(255,248,236,.88);color:#2b211d}
 .lbl .zz{display:none;font-family:'Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic',sans-serif;font-size:13px;color:#cfd8f0;animation:zz 2.4s infinite}
@@ -138,9 +142,10 @@ body.touch #log{bottom:280px}
 <div id="snd"><button class="pill" id="tCh" title="채널 바꾸기" style="display:none">🔁 채널</button><button class="pill" id="tTime" title="시간대 바꾸기 (코드 필요)">🕰 실시간</button><button class="pill" id="tMusic">음악</button><button class="pill" id="tPip" title="작은 창으로 띄워 놓고 다른 일 하기">🪟 PiP</button><button class="pill" id="tGB">📖 방명록</button><button class="pill" id="tAmb" title="낮엔 새소리, 밤엔 풀벌레 소리">🌿 바깥 소리</button></div>
 <div class="sndPop" id="musPop"><div class="sp-t">오늘의 음악</div><div class="glist"></div><label class="vrow">볼륨<input type="range" id="mVol" min="0" max="100" step="1"><b id="mVolV"></b></label></div>
 <div class="sndPop" id="gbPop"><div class="sp-t">📖 오늘의 방명록 <span id="gbCh" style="font-weight:400;opacity:.6;font-size:11px"></span></div><div class="sp-s">이 채널 모두가 함께 봐요 · 한국 시간 자정에 새 페이지 <span id="gbSt"></span></div><div id="gbList"></div><form id="gbForm" autocomplete="off"><input id="gbIn" maxlength="100" placeholder="한 줄 남기기 (100자)"><button>남기기</button></form></div>
+<div class="sndPop" id="notePop"><div class="sp-t">📝 내 등에 붙은 포스트잇</div><div class="sp-s">누가 몰래 붙였을까요? 하나씩 뗄 수 있어요</div><div class="nl"></div><button class="all">모두 떼기</button></div>
 <div class="sndPop" id="ambPop"><div class="sp-t">바깥 소리</div><div class="sp-s">낮엔 새소리 · 밤엔 풀벌레</div><label class="vrow">볼륨<input type="range" id="aVol" min="0" max="100" step="1"><b id="aVolV"></b></label></div>
 <div id="log"></div>
-<div id="shopPop"><button class="x" id="shopX">✕</button><div class="ic">☕</div><div class="q">HOGI ROASTERS 원두</div><div class="s">매장에서 직접 볶은 원두를<br>스마트스토어에서 만나보세요</div><a id="shopGo" href="https://smartstore.naver.com/hogi_roasters" target="_blank" rel="noopener">🛒 원두 구매하러 가기</a><div class="u">smartstore.naver.com/hogi_roasters</div></div><div id="pipNote"><div>🪟 카페가 작은 창(PiP)에서 열려 있어요</div><button id="pipBack">여기로 돌아오기</button></div><div id="hint"></div><div id="toast"></div><div id="banner"><div class="big"></div><div class="sub"></div></div><div id="timePop" style="position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);padding:20px 22px 18px;border-radius:20px;background:rgba(43,33,29,.95);border:1px solid rgba(246,238,227,.18);text-align:center;z-index:9;width:min(320px,calc(100% - 40px));display:none"><button class="x" id="tpX">✕</button><div class="q" style="font-family:'Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic',sans-serif;font-size:17px;margin-bottom:4px">시간대 바꾸기</div><div class="s" id="tpMsg" style="font-size:12.5px;opacity:.75;margin-bottom:14px">코드를 입력하면 이 채널 모두에게 적용돼요</div><div id="tpLock"><input id="tpCode" type="password" inputmode="numeric" maxlength="4" placeholder="····" autocomplete="off"></div><div class="row" id="tpRow" style="display:none;gap:8px"></div></div><div id="offPop"><div class="q">오늘도 수고했어요</div><div class="s">퇴근할까요, 조금만 더 할까요?</div><div class="row"><button id="goHome">🌸 퇴근한다</button><button id="stay">🌙 야근한다</button></div></div>
+<div id="shopPop"><button class="x" id="shopX">✕</button><div class="ic">☕</div><div class="q">HOGI ROASTERS 원두</div><div class="s">매장에서 직접 볶은 원두를<br>스마트스토어에서 만나보세요</div><a id="shopGo" href="https://smartstore.naver.com/hogi_roasters" target="_blank" rel="noopener">🛒 원두 구매하러 가기</a><div class="u">smartstore.naver.com/hogi_roasters</div></div><button id="myNotes" style="display:none"></button><div id="stickPop"><button class="x" id="stickX">✕</button><div class="who"></div><div class="s">등에 몰래 포스트잇 붙이기 (30자 · 최대 5장)</div><div class="nl"></div><div class="in"><input id="stickIn" maxlength="30" placeholder="예) 커피 쏘는 사람 ㅋㅋ" autocomplete="off"><button id="stickGo">붙이기</button></div><div class="fr" style="display:none">자유방에서는 포스트잇을 쓸 수 없어요</div></div><div id="pipNote"><div>🪟 카페가 작은 창(PiP)에서 열려 있어요</div><button id="pipBack">여기로 돌아오기</button></div><div id="hint"></div><div id="toast"></div><div id="banner"><div class="big"></div><div class="sub"></div></div><div id="timePop" style="position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);padding:20px 22px 18px;border-radius:20px;background:rgba(43,33,29,.95);border:1px solid rgba(246,238,227,.18);text-align:center;z-index:9;width:min(320px,calc(100% - 40px));display:none"><button class="x" id="tpX">✕</button><div class="q" style="font-family:'Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic',sans-serif;font-size:17px;margin-bottom:4px">시간대 바꾸기</div><div class="s" id="tpMsg" style="font-size:12.5px;opacity:.75;margin-bottom:14px">코드를 입력하면 이 채널 모두에게 적용돼요</div><div id="tpLock"><input id="tpCode" type="password" inputmode="numeric" maxlength="4" placeholder="····" autocomplete="off"></div><div class="row" id="tpRow" style="display:none;gap:8px"></div></div><div id="offPop"><div class="q">오늘도 수고했어요</div><div class="s">퇴근할까요, 조금만 더 할까요?</div><div class="row"><button id="goHome">🌸 퇴근한다</button><button id="stay">🌙 야근한다</button></div></div>
 <div id="joy"><div id="knob"></div></div>
 <div id="bar">
   <button class="act" data-a="sip" id="sipBtn"><b>1</b>☕ 주문</button>
@@ -1170,7 +1175,7 @@ function animChar(g,st,t,moving,dt){
   for(const tr of u.tears){tr.visible=crying;if(crying){const E=u.eyeP,ph=(tt*1.1+tr.userData.j*.5)%1;tr.position.y=E.y-.03-ph*.11;tr.position.x=tr.userData.sx*(E.x+.012+ph*.02);tr.position.z=E.z-ph*.03;tr.material.opacity=.9*(1-ph*.6)}}
 }
 const labelsEl=$('#labels');
-function makeLabel(isMe){const el=document.createElement('div');el.className='lbl'+(isMe?' me':'');const b=document.createElement('div');b.className='bub';const z=document.createElement('div');z.className='zz';z.textContent='z z z';const n=document.createElement('span');n.className='nm';const sl=document.createElement('div');sl.className='stl';const pn=document.createElement('div');pn.className='pin';el.append(b,z,pn,sl,n);labelsEl.appendChild(el);return {el,b,z,n,sl,pn,pnt:'',stt:'',bubUntil:0}}
+function makeLabel(isMe){const el=document.createElement('div');el.className='lbl'+(isMe?' me':'');const b=document.createElement('div');b.className='bub';const z=document.createElement('div');z.className='zz';z.textContent='z z z';const n=document.createElement('span');n.className='nm';const sl=document.createElement('div');sl.className='stl';const pn=document.createElement('div');pn.className='pin';const nt=document.createElement('div');nt.className='nte';el.append(b,z,pn,nt,sl,n);labelsEl.appendChild(el);return {el,b,z,n,sl,pn,nt,ntt:'',pnt:'',stt:'',bubUntil:0}}
 function setPin(lbl,t){t=t||'';if(t===lbl.pnt)return;lbl.pnt=t;lbl.pn.textContent=t?'📌 '+t:'';lbl.pn.classList.toggle('on',!!t)}
 function lblStatus(lbl,st){const B=BOOKS[st.bk];const t=st.a==='read'&&B?`${B.e} ${B.n} 읽는 중`:st.a==='browse'?'🤔 책 고르는 중':st.a==='bake'?'🧑‍🍳 알바 · 굽는 중':st.a==='dish'?'🧽 알바 · 설거지 중':(st.job||st.jb)?'🧑‍🍳 알바 중':'';if(t!==lbl.stt){lbl.stt=t;lbl.sl.textContent=t;lbl.sl.style.display=t?'block':'none'}}
 
@@ -1270,6 +1275,39 @@ function openShop(){if(pipWin){window.open(SHOP_URL,'_blank','noopener');return}
 $('#shopX').addEventListener('click',()=>$('#shopPop').classList.remove('on'));$('#shopGo').addEventListener('click',()=>setTimeout(()=>$('#shopPop').classList.remove('on'),300));
 document.addEventListener('pointerdown',e=>{if(!e.target.closest('#shopPop'))$('#shopPop').classList.remove('on')},true);
 const shopLbl=makeLabel(false);shopLbl.el.classList.add('npc','cat');shopLbl.n.textContent='☕ 원두 구매';const shopProxy={position:new THREE.Vector3(ROASTER.x-.3,.45,ROASTER.z)};
+/* ---------- back post-its: stick a note on someone's back; they see a notice and can read / peel each one ---------- */
+const noteGeo=new THREE.PlaneGeometry(.115,.115);const NOTE_COLS=['#fff27a','#ffd1e0','#c9f2c7','#cfe6ff','#ffd9a8'],noteTexC=new Map(),MAX_NOTES=5;
+function noteTex(id,m){let t=noteTexC.get(id);if(t)return t;let h=0;for(const ch of id)h=(h*31+ch.charCodeAt(0))|0;
+  t=canvasTex(128,128,(g,w,hh)=>{g.fillStyle=NOTE_COLS[Math.abs(h)%NOTE_COLS.length];g.fillRect(0,0,w,hh);g.fillStyle='rgba(0,0,0,.06)';g.fillRect(0,0,w,16);g.fillStyle='#2b211d';g.font='bold 19px "Noto Sans KR",sans-serif';g.textAlign='center';
+    const words=[...m];let lines=[''],k=0;for(const c of words){if(g.measureText(lines[k]+c).width>110){if(k===3)break;lines[++k]=''}lines[k]+=c}lines.forEach((l,i)=>g.fillText(l,w/2,42+i*24))});
+  noteTexC.set(id,t);return t}
+function setNotes(g,list){const u=g.userData;const sig=list.map(n=>n[0]).join(',');if(u.noteSig===sig)return;u.noteSig=sig;
+  if(!u.notesG){u.notesG=new THREE.Group();u.torso.add(u.notesG)}while(u.notesG.children.length)u.notesG.remove(u.notesG.children[0]);
+  list.forEach((n,i)=>{const p=new THREE.Mesh(noteGeo,new THREE.MeshBasicMaterial({map:noteTex(n[0],n[1]),side:THREE.DoubleSide}));
+    const col=i%2,row=Math.floor(i/2),y=.3-row*.105,r=(y>.25?.165:.175);p.position.set(col?.06:-.06,y,-r);p.rotation.set(0,Math.PI+(col?-.25:.25),(i%3-1)*.12);u.notesG.add(p)})}
+function noteBadge(lbl,n){const t=n?`📝 등에 포스트잇 ${n}장 ㅋㅋ`:'';if(lbl.ntt===t)return;lbl.ntt=t;lbl.nt.textContent=t;lbl.nt.classList.toggle('on',!!t)}
+function cleanNotes(arr){if(!Array.isArray(arr))return [];return arr.slice(0,MAX_NOTES).filter(n=>Array.isArray(n)&&typeof n[0]==='string'&&/^[a-z0-9]{4,40}$/.test(n[0])&&typeof n[1]==='string').map(n=>[n[0],n[1].slice(0,30),String(n[2]||'누군가').slice(0,24)])}
+// someone sticks a note on me
+let stickLast=0;
+function onStick(d){if(!d||d.to!==myId||!entered||freeRoom())return;const L=cleanNotes([[d.id,d.m,d.fn]]);if(!L.length||player.notes.some(n=>n[0]===L[0][0]))return;
+  if(player.notes.length>=MAX_NOTES)player.notes.shift();player.notes.push(L[0]);refreshMyNotes();sendPresence(true);toast('😳 누군가 내 등에 포스트잇을 붙였어요! 📝 버튼으로 확인해 보세요');sfx('page')}
+function refreshMyNotes(){setNotes(player.g,player.notes);noteBadge(player.lbl,player.notes.length);const b=$('#myNotes');b.style.display=player.notes.length&&entered?'':'none';b.textContent=`📝 내 등 포스트잇 ${player.notes.length}`;if($('#notePop').classList.contains('show'))renderMyNotes()}
+function renderMyNotes(){const box=$('#notePop .nl');box.innerHTML='';if(!player.notes.length){box.innerHTML='<div class="empty">등이 깨끗해요 ✨</div>';return}
+  player.notes.forEach(n=>{const d=document.createElement('div');d.className='ne';const s=document.createElement('span');s.textContent=n[1];const f=document.createElement('i');f.textContent='from '+n[2];const b=document.createElement('button');b.textContent='떼기';
+    b.addEventListener('click',()=>{player.notes=player.notes.filter(x=>x[0]!==n[0]);refreshMyNotes();sendPresence(true);toast('📝 포스트잇을 뗐어요');sfx('page')});d.append(s,f,b);box.appendChild(d)})}
+$('#myNotes').addEventListener('click',e=>{e.stopPropagation();closePops('#notePop');$('#notePop').classList.toggle('show');renderMyNotes()});
+$('#notePop .all').addEventListener('click',()=>{if(!player.notes.length)return;player.notes=[];refreshMyNotes();sendPresence(true);toast('📝 등에 붙은 포스트잇을 모두 뗐어요')});
+// sticking a note on someone else
+let stickTo=null;
+function openStick(id){const o=remotes.get(id);if(!o)return;stickTo=id;const pop=$('#stickPop');pop.querySelector('.who').textContent=`${o.name}의 등`;const box=pop.querySelector('.nl');box.innerHTML='';
+  const L=o.nt||[];if(!L.length)box.innerHTML='<div class="empty">아직 깨끗한 등이에요</div>';else L.forEach(n=>{const d=document.createElement('div');d.className='ne';const s=document.createElement('span');s.textContent=n[1];const f=document.createElement('i');f.textContent='from '+n[2];d.append(s,f);box.appendChild(d)});
+  const fr=freeRoom();pop.querySelector('.in').style.display=fr?'none':'';pop.querySelector('.fr').style.display=fr?'':'none';pop.classList.add('on');if(!fr)setTimeout(()=>$('#stickIn').focus(),50)}
+function sendStick(){const m=$('#stickIn').value.trim().slice(0,30),o=remotes.get(stickTo);if(!m||!o)return;if(freeRoom())return;if(Date.now()-stickLast<8000){toast(`조금 뒤에 다시 붙일 수 있어요 (${Math.ceil((8000-(Date.now()-stickLast))/1000)}초)`);return}
+  if((o.nt||[]).length>=MAX_NOTES){toast('등이 포스트잇으로 꽉 찼어요 ㅋㅋ');return}stickLast=Date.now();
+  pub('stick',{to:stickTo,id:myId+Date.now().toString(36),m,fn:me.name});$('#stickIn').value='';$('#stickPop').classList.remove('on');toast(`📝 ${o.name}의 등에 몰래 붙였어요 ㅋㅋ`);sfx('page')}
+$('#stickIn').addEventListener('keydown',e=>{e.stopPropagation();if(e.key==='Enter'&&!e.isComposing&&e.keyCode!==229){e.preventDefault();sendStick()}if(e.key==='Escape')$('#stickPop').classList.remove('on')});
+$('#stickGo').addEventListener('click',sendStick);$('#stickX').addEventListener('click',()=>$('#stickPop').classList.remove('on'));
+function remoteHit(){const arr=[...remotes.entries()];if(!arr.length)return null;const hits=ray.intersectObjects(arr.map(e=>e[1].g),true);if(!hits.length)return null;let o=hits[0].object;while(o&&o.parent!==scene)o=o.parent;const f=arr.find(e=>e[1].g===o);return f?f[0]:null}
 function petDog(){if(!entered)return;closeMenu();const d=Math.hypot(player.x-DOG.x,player.z-DOG.z);if(player.s>=0)standUp();
   if(d<1.15){startDogPet();return}const l=d||1,tx=DOG.x+(player.x-DOG.x)/l*.8,tz=DOG.z+(player.z-DOG.z)/l*.8;
   moveTo={x:tx,z:tz,seat:-1,dog:true,best:Infinity,stuck:0};marker.position.set(tx,.015,tz);marker.material.opacity=.9}
@@ -1324,7 +1362,7 @@ function updatePetals(dt,t){
 /* ---------- player ---------- */
 const player={x:rand(3.2,5.6),z:rand(-8.8,-7.9),r:0,a:'',d:'ha',s:-1,g:makeChar(me.c,me.gd),lbl:makeLabel(true)};
 player.g.position.set(player.x,0,player.z);player.g.rotation.y=player.r;player.g.visible=false;
-player.drink=null;player.dessert=null;player.bk=-1;player.job=null;player.tw=false;player.toyReady=false;player.toyUntil=0;player.bkTitle='';player.pendBk=-1;player.bp=0;player.sp=0;player.cry=false;player.pf=0;player.churu=0;player.pc=-1;Object.defineProperties(player,{ds:{get(){return this.dessert?this.dessert.k:''}},dl:{get(){return this.dessert?this.dessert.left:BITES}},h:{get(){return this.drink?1:0}},l:{get(){return this.drink?this.drink.left:SIPS}}});player.lbl.el.style.display='none';
+player.drink=null;player.dessert=null;player.notes=[];player.bk=-1;player.job=null;player.tw=false;player.toyReady=false;player.toyUntil=0;player.bkTitle='';player.pendBk=-1;player.bp=0;player.sp=0;player.cry=false;player.pf=0;player.churu=0;player.pc=-1;Object.defineProperties(player,{ds:{get(){return this.dessert?this.dessert.k:''}},dl:{get(){return this.dessert?this.dessert.left:BITES}},h:{get(){return this.drink?1:0}},l:{get(){return this.drink?this.drink.left:SIPS}}});player.lbl.el.style.display='none';
 const PR=.3;
 function collide(p){
   for(const b of COL){if(b===PLAT&&p===player&&player.job)continue;const cx=clamp(p.x,b[0],b[1]),cz=clamp(p.z,b[2],b[3]);const dx=p.x-cx,dz=p.z-cz,d2=dx*dx+dz*dz;
@@ -1349,6 +1387,7 @@ function syncPeers(peers){
     o.tx=num(pr.x,-W,W,0);o.tz=num(pr.z,-D,D,0);o.tr=num(pr.r,-10,10,0);
     o.a=['sip','read','work','pet','order','yay','feed','bite','browse','bake','dish'].includes(pr.a)?pr.a:'';o.jb=pr.jb?1:0;o.tw=pr.tw?1:0;o.bk=Number.isInteger(pr.bk)&&BOOKS[pr.bk]?pr.bk:-1;o.ds=DESSERT[pr.ds]?pr.ds:'';o.dl=Number.isInteger(pr.dl)?clamp(pr.dl,0,BITES):BITES;o.cc=Number.isInteger(pr.cc)?clamp(pr.cc,0,40):0;o.pc=Number.isInteger(pr.pc)?pr.pc:-1;o.cry=pr.cry?1:0;o.pf=num(pr.pf,0,1e15,0);o.d=DRINK[pr.d]?pr.d:'ha';o.h=pr.h?1:0;o.l=Number.isInteger(pr.l)?clamp(pr.l,0,SIPS):SIPS;o.s=Number.isInteger(pr.s)&&SEATS[pr.s]?pr.s:-1;
     const nm=str(pr.n,24);if(nm!==o.name){o.name=nm;o.lbl.n.textContent=nm}
+    {const L=freeRoom()?[]:cleanNotes(pr.nt);o.nt=L;setNotes(o.g,L);noteBadge(o.lbl,L.length)}
     {const pn=typeof pr.pn==='string'&&!freeRoom()?pr.pn.slice(0,30):'';if(pn!==o.pn){o.pn=pn;setPin(o.lbl,pn)}}
     const mt=num(pr.mt,0,1e15,0),m=str(pr.m,80);
     if(mt&&mt!==o.mt){o.mt=mt;if(m&&Date.now()-mt<15000&&(!freeRoom()||EMO.includes(m))){showBubble(o.lbl,m);logLine(nm,m)}}
@@ -1388,7 +1427,7 @@ function updateCount(){
   const n=others.size+(entered?1:0);
   const cap=capOf(myCh);el.textContent=n<=1?(entered?`지금은 당신 혼자 머무는 중 · 1/${cap}`:'아직 아무도 없어요'):`지금 ${n}명이 머무는 중 · ${Math.min(n,cap)}/${cap}`;
 }
-function myState(){return {n:me.name,c:me.c,gd:me.gd,x:Math.round(player.x*100)/100,z:Math.round(player.z*100)/100,r:Math.round(player.r*100)/100,a:player.a==='order'?'order':player.a,d:player.d,h:player.drink?1:0,l:player.drink?player.drink.left:0,cry:player.cry?1:0,ds:player.ds,dl:player.dl,pf:player.pf||0,cc:player.churu||0,pc:player.pc,s:player.s,bk:player.bk,jb:player.job?1:0,tw:player.tw?1:0,pn:player.pn||''}}
+function myState(){return {n:me.name,c:me.c,gd:me.gd,x:Math.round(player.x*100)/100,z:Math.round(player.z*100)/100,r:Math.round(player.r*100)/100,a:player.a==='order'?'order':player.a,d:player.d,h:player.drink?1:0,l:player.drink?player.drink.left:0,cry:player.cry?1:0,ds:player.ds,dl:player.dl,pf:player.pf||0,cc:player.churu||0,pc:player.pc,s:player.s,bk:player.bk,jb:player.job?1:0,tw:player.tw?1:0,pn:player.pn||'',nt:player.notes||[]}}
 function pub(t,o){if(ch&&live)try{ch.publish(P+t,JSON.stringify(o),{qos:0})}catch(e){}}
 function pubR(t,o){if(ch&&live)try{ch.publish(P+t,o==null?'':JSON.stringify(o),{qos:1,retain:true})}catch(e){}}
 function sendPresence(force){
@@ -1417,6 +1456,7 @@ function connectMQTT(){
       else if(t==='chat'){if(d&&typeof d.id==='string')upsert(d.id,{m:d.m,mt:d.mt})}
       else if(t==='hi'){if(d&&d.id!==myId){sendPresence(true);onHi()}}
       else if(t==='cats'||t==='feed'||t==='time'||t==='cbite'){handleExtra(t,d)}
+      else if(t==='stick'){onStick(d)}
       else if(t==='gbreq'||t==='gbsync'){onGBPeer(t,d)}
       else if(t==='salereq'||t==='salesync'){onSalePeer(t,d)}
       else if(t.startsWith('bye/')){if(others.delete(t.slice(4))){emitPeers()}updateCount()}
@@ -1630,6 +1670,8 @@ function clickMove(e){
   if(!entered)return;
   const r=canvas.getBoundingClientRect();ndc.set((e.clientX-r.left)/r.width*2-1,-(e.clientY-r.top)/r.height*2+1);ray.setFromCamera(ndc,camera);
   if(ray.intersectObject(barista.g,true).length){goOrder();return}
+  {const rid=remoteHit();if(rid){openStick(rid);return}}
+  if(player.notes.length&&ray.intersectObject(player.g,true).length){closePops('#notePop');$('#notePop').classList.add('show');renderMyNotes();return}
   if(roasterHit&&ray.intersectObject(roasterHit).length){openShop();return}
   if(ray.intersectObject(wcDoor).length){toast(pick(['🚻 화장실은 지금 사용 중이에요','🚻 똑똑… 사람이 있어요']));return}
   if(ray.intersectObject(dog.g,true).length){petDog();return}
@@ -1813,7 +1855,7 @@ function sfx(kind){if(!actx)return;const t=actx.currentTime;
   if(kind==='key'){const n=actx.createBufferSource(),b=actx.createBuffer(1,Math.floor(actx.sampleRate*.02),actx.sampleRate),d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*(1-i/d.length);n.buffer=b;const bp=actx.createBiquadFilter();bp.type='bandpass';bp.frequency.value=rand(3000,4500);const g=actx.createGain();g.gain.value=.05;n.connect(bp);bp.connect(g);g.connect(master);n.start(t);return}
   if(kind==='clink'){[2637,3951].forEach((fq,i)=>{const o=actx.createOscillator(),g=actx.createGain();o.frequency.value=fq;g.gain.setValueAtTime(.05/(i+1),t);g.gain.exponentialRampToValueAtTime(.0001,t+.35);o.connect(g);g.connect(master);o.start(t);o.stop(t+.4)})}
   else{const n=actx.createBufferSource(),b=actx.createBuffer(1,actx.sampleRate*.2,actx.sampleRate),d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*(1-i/d.length);n.buffer=b;const bp=actx.createBiquadFilter();bp.type='bandpass';bp.frequency.value=kind==='page'?3200:500;const g=actx.createGain();g.gain.value=kind==='page'?.12:.2;n.connect(bp);bp.connect(g);g.connect(master);n.start(t)}}
-function closePops(except){['#musPop','#ambPop','#gbPop'].forEach(id=>{if(id!==except)$(id).classList.remove('show')})}
+function closePops(except){['#musPop','#ambPop','#gbPop','#notePop'].forEach(id=>{if(id!==except)$(id).classList.remove('show')})}
 $('#tMusic').addEventListener('click',e=>{e.stopPropagation();closePops('#musPop');$('#musPop').classList.toggle('show')});
 $('#tGB').addEventListener('click',e=>{e.stopPropagation();closePops('#gbPop');$('#gbPop').classList.toggle('show');renderGB()});
 const GB=new Map();let gbDay=kstDate(),gbLast=0;
@@ -1860,7 +1902,7 @@ function onGBPeer(t,d){if(!d||typeof d!=='object')return;
 setInterval(()=>{if(kstDate()!==gbDay){gbDay=kstDate();GB.clear();renderGB();if(entered)toast('📖 자정이 지나 방명록이 새 페이지로 넘어갔어요')}},20000);
 renderGB();
 $('#tAmb').addEventListener('click',e=>{e.stopPropagation();closePops('#ambPop');$('#ambPop').classList.toggle('show')});
-document.addEventListener('pointerdown',e=>{if(!e.target.closest('.sndPop')&&!e.target.closest('#snd'))closePops()});
+document.addEventListener('pointerdown',e=>{if(!e.target.closest('.sndPop')&&!e.target.closest('#snd')&&!e.target.closest('#myNotes'))closePops();if(!e.target.closest('#stickPop'))$('#stickPop').classList.remove('on')});
 $('#musPop .glist').innerHTML=GENRES.map(([k,l])=>`<button class="gbtn" data-g="${k}">${l}</button>`).join('');
 $('#musPop .glist').addEventListener('click',e=>{const b=e.target.closest('.gbtn');if(b)setGenre(b.dataset.g)});
 const mv=$('#mVol'),av=$('#aVol');mv.value=musicVol;av.value=ambVol;
