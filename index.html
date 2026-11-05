@@ -1503,7 +1503,7 @@ updateCount();connectLobby();
 
 /* ---------- chat ---------- */
 const logEl=$('#log');
-function logLine(name,msg){const d=document.createElement('div');const i=document.createElement('i');i.textContent=name;d.append(i,document.createTextNode('  '+msg));logEl.appendChild(d);while(logEl.children.length>6)logEl.firstChild.remove();setTimeout(()=>{d.style.opacity='0';setTimeout(()=>d.remove(),1300)},14000)}
+function logLine(name,msg){const d=document.createElement('div');const i=document.createElement('i');i.textContent=name;d.append(i,document.createTextNode('  '+msg));logEl.appendChild(d);while(logEl.children.length>6)logEl.firstChild.remove();setTimeout(()=>{d.style.opacity='0';setTimeout(()=>d.remove(),1300)},60000)}
 const EMO=['😊','😂','😍','😢','😮'];
 function showBubble(lbl,msg){lbl.b.textContent=msg;lbl.b.classList.toggle('emo',EMO.includes(msg));lbl.b.classList.add('on');lbl.bubUntil=performance.now()+6500}
 const chatIn=$('#chat');
@@ -2712,7 +2712,7 @@ drawWindow(cur,0);drawSky(cur);
   for(const o of scene.children){if(dyn.has(o)||!(o.isMesh||o.isGroup||o.isPoints||o.isLine))continue;o.traverse(x=>{x.updateMatrix();x.matrixAutoUpdate=false})}})();
 requestAnimationFrame(loop);
 /* ---------- Picture-in-Picture: keep the cafe floating while doing other things ---------- */
-const PIP_MOVE=['#banner','#toast','#offPop','#bungPop'].map(q=>document.querySelector(q));
+const PIP_MOVE=['#banner','#toast','#offPop','#bungPop','#log','#myNotes','#notePop','#ofcPop','#menuPop','#actPop','#stickPop'].map(q=>document.querySelector(q));let pipBarT=0;
 async function openPip(){
   if(pipWin){pipWin.close();return}
   if(vidPip){try{await document.exitPictureInPicture()}catch(e){}return}
@@ -2726,6 +2726,10 @@ async function openPip(){
         i.style.cssText="width:100%;box-sizing:border-box;font:13px 'Noto Sans KR','Apple SD Gothic Neo',sans-serif;padding:8px 12px;border-radius:12px;border:1px solid rgba(246,238,227,.3);background:rgba(43,33,29,.78);color:#f6eee3;outline:none;backdrop-filter:blur(6px)";
         if(freeRoom()){f.style.cssText+=';display:flex;gap:6px;justify-content:center';for(const em of EMO){const bb=d.createElement('button');bb.textContent=em;bb.style.cssText='flex:1;max-width:60px;font-size:22px;padding:6px 0;border-radius:12px;border:1px solid rgba(246,238,227,.3);background:rgba(43,33,29,.78);cursor:pointer';bb.addEventListener('click',()=>sendEmo(em));f.appendChild(bb)}d.body.appendChild(f)}
         else{f.appendChild(i);d.body.appendChild(f)}
+        {const st=d.createElement('style');st.textContent='#log{left:10px!important;bottom:92px!important;width:62%!important}#log div{font-size:11.5px!important}#myNotes{left:auto!important;right:10px!important;bottom:92px!important}#menuPop,#actPop,#ofcPop{bottom:92px!important;max-height:calc(100vh - 110px)!important;overflow-y:auto}.pbb{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font:12.5px "Noto Sans KR","Apple SD Gothic Neo",sans-serif;padding:7px 6px;border-radius:12px;border:1px solid rgba(246,238,227,.3);background:rgba(43,33,29,.82);color:#f6eee3;cursor:pointer}.pbb.on{background:rgba(200,64,46,.9)}.pbb:disabled{opacity:.4}';d.head.appendChild(st);
+          const pb=d.createElement('div');pb.style.cssText='position:fixed;left:8px;right:8px;bottom:50px;display:flex;gap:6px;z-index:5';d.body.appendChild(pb);
+          const map=[['#sipBtn'],['#bungBtn'],['#doBtn'],['#sitBtn']].map(([q])=>{const src=document.querySelector(q),b=d.createElement('button');b.className='pbb';b.addEventListener('click',e=>{e.stopPropagation();src.click();b.blur()});pb.appendChild(b);return [src,b]});
+          const sync=()=>{for(const [src,b] of map){const hid=getComputedStyle(src).display==='none';b.style.display=hid?'none':'';const t=src.textContent.replace(/^\d\s*/,'').trim();if(b.textContent!==t)b.textContent=t;b.disabled=!!src.disabled;b.classList.toggle('on',src.classList.contains('on'))}};sync();clearInterval(pipBarT);pipBarT=setInterval(sync,300)}
         i.addEventListener('keydown',e=>{e.stopPropagation();if(e.key==='Escape'){i.blur();return}if(e.key!=='Enter'||e.isComposing||e.keyCode===229)return;e.preventDefault();const m=i.value.trim();if(!m)return;chatIn.value=m;sendChat();i.value=''});}
       for(const ev of ['keydown','keyup'])w.addEventListener(ev,e=>{if(e.target&&e.target.tagName==='INPUT')return;window.dispatchEvent(new KeyboardEvent(ev,{key:e.key,code:e.code,keyCode:e.keyCode}))});
       w.addEventListener('resize',resize);w.addEventListener('pagehide',closedPip);
@@ -2734,7 +2738,7 @@ async function openPip(){
     try{const v=document.createElement('video');v.muted=true;v.playsInline=true;v.srcObject=canvas.captureStream(30);await v.play();await v.requestPictureInPicture();vidPip=v;$('#tPip').classList.add('on');
       v.addEventListener('leavepictureinpicture',()=>{vidPip=null;$('#tPip').classList.remove('on');v.srcObject=null});toast('🪟 PiP로 띄웠어요 · 보기 전용이에요');return}catch(e){vidPip=null}}
   toast('이 브라우저는 PiP를 지원하지 않아요 · 크롬이나 엣지(PC)에서 써 보세요')}
-function closedPip(){if(!pipWin)return;pipWin=null;document.body.append(...PIP_MOVE);document.body.prepend(labelsEl);document.body.prepend(canvas);$('#pipNote').classList.remove('on');$('#tPip').classList.remove('on');resize();loopGen++;requestAnimationFrame(t=>loop(t,loopGen))}
+function closedPip(){if(!pipWin)return;pipWin=null;clearInterval(pipBarT);document.body.append(...PIP_MOVE);document.body.prepend(labelsEl);document.body.prepend(canvas);$('#pipNote').classList.remove('on');$('#tPip').classList.remove('on');resize();loopGen++;requestAnimationFrame(t=>loop(t,loopGen))}
 $('#tPip').addEventListener('click',e=>{e.stopPropagation();openPip()});
 $('#pipBack').addEventListener('click',()=>{if(pipWin)pipWin.close()});
 // keep the video-PiP alive when this tab is in the background
