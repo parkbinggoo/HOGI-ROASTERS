@@ -2541,8 +2541,8 @@ function updateOfficeSky(dt){if(!OFC.sun)return;const {h,doy}=currentHour(),{ris
 const EARN=new Map();let myEid='';try{myEid=localStorage.getItem('uhwa-eid')||'';if(!/^[a-z0-9]{8,16}$/.test(myEid)){myEid=Math.random().toString(36).slice(2,12).padEnd(10,'x');localStorage.setItem('uhwa-eid',myEid)}}catch(e){myEid=Math.random().toString(36).slice(2,12).padEnd(10,'x')}
 function kstDateOff(days){const d=new Date(Date.now()+TZ_OFF*3600e3-days*864e5);return d.getUTCFullYear()+'-'+(d.getUTCMonth()+1)+'-'+d.getUTCDate()}
 function winDate(){return kstNow().h>=18?kstDate():kstDateOff(1)}
-function addEarn(pay){if(!workHours())return;const dd=kstDate();let a=0;try{a=parseInt(localStorage.getItem('uhwa-earn-'+dd)||'0',10)||0}catch(e){}a+=pay;try{localStorage.setItem('uhwa-earn-'+dd,String(a))}catch(e){}
-  if(!EARN.has(dd))EARN.set(dd,new Map());EARN.get(dd).set(myEid,{n:me.name,a});renderLiveBest();pubR('earn/'+dd+'/'+myEid,{n:me.name,a})}
+function addEarn(pay){if(!workHours())return;const dd=kstDate(),eid=player.pk?'pk'+player.pk+'00':myEid,lk='uhwa-earn-'+dd+'-'+eid;let a=0;const M3=EARN.get(dd),known=M3&&M3.get(eid)?M3.get(eid).a:0;try{a=parseInt(localStorage.getItem(lk)||'0',10)||0}catch(e){}a=Math.max(a,known)+pay;try{localStorage.setItem(lk,String(a))}catch(e){}
+  if(!EARN.has(dd))EARN.set(dd,new Map());EARN.get(dd).set(eid,{n:me.name,a});renderLiveBest();pubR('earn/'+dd+'/'+eid,{n:me.name,a})}
 function onEarn(rest,d,topic){const [dd,id]=rest.split('/');if(!id||!/^[a-z0-9]{4,16}$/.test(id)||!/^\d{4}-\d{1,2}-\d{1,2}$/.test(dd))return;
   if(dd!==kstDate()&&dd!==kstDateOff(1)){if(d&&ch&&live)try{ch.publish(topic,'',{qos:1,retain:true})}catch(e){}return}
   if(!d||typeof d!=='object')return;const a=Math.max(0,Math.min(1e8,Number(d.a)||0)),n=typeof d.n==='string'?d.n.slice(0,24):'';if(!n)return;
