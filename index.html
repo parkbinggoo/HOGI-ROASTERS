@@ -142,7 +142,7 @@ body.touch #log{bottom:280px}
 <canvas id="c"></canvas>
 <div id="labels"></div>
 <div id="hud"><h1>HOGI ROASTERS<span>호기로스터스</span></h1><div id="clock"></div><div id="count">문을 여는 중…</div><div id="cash">💰 0원</div><div id="caff" style="display:none"></div><div id="chTag"></div><div id="sales"></div></div>
-<div id="snd"><button class="pill" id="tCh" title="채널 바꾸기" style="display:none">🔁 채널</button><button class="pill" id="tTime" title="시간대·날씨 바꾸기 (나에게만)">🕰 실시간</button><button class="pill" id="tMusic">음악</button><button class="pill" id="tPip" title="작은 창으로 띄워 놓고 다른 일 하기">🪟 PiP</button><button class="pill" id="tGB">📖 방명록</button><button class="pill" id="tAmb" title="낮엔 새소리, 밤엔 풀벌레 소리">🌿 바깥 소리</button></div>
+<div id="snd"><button class="pill" id="tCh" title="채널 바꾸기" style="display:none">🔁 채널</button><button class="pill" id="tTime" title="시간대·날씨 바꾸기 (나에게만)">🕰 실시간</button><button class="pill" id="tMusic">음악</button><button class="pill" id="tEco" title="절전 모드: 30fps · 화질↓ · 그림자↓ (맥북 발열 줄이기)"></button><button class="pill" id="tPip" title="작은 창으로 띄워 놓고 다른 일 하기">🪟 PiP</button><button class="pill" id="tGB">📖 방명록</button><button class="pill" id="tAmb" title="낮엔 새소리, 밤엔 풀벌레 소리">🌿 바깥 소리</button></div>
 <div class="sndPop" id="musPop"><div class="sp-t">오늘의 음악</div><div class="sp-s ofcOnly">🎵 사무실 BGM은 현주님 컴퓨터에서만 고를 수 있어요 · 볼륨은 각자</div><div class="glist"></div><label class="vrow">볼륨<input type="range" id="mVol" min="0" max="100" step="1"><b id="mVolV"></b></label></div>
 <div class="sndPop" id="gbPop"><div class="sp-t">📖 오늘의 방명록 <span id="gbCh" style="font-weight:400;opacity:.6;font-size:11px"></span></div><div class="sp-s">이 채널 모두가 함께 봐요 · 한국 시간 자정에 새 페이지 <span id="gbSt"></span></div><div id="gbList"></div><form id="gbForm" autocomplete="off"><input id="gbIn" maxlength="100" placeholder="한 줄 남기기 (100자)"><button>남기기</button></form></div>
 <div class="sndPop" id="notePop"><div class="sp-t">📝 내 등에 붙은 포스트잇</div><div class="sp-s">누가 몰래 붙였을까요? 하나씩 뗄 수 있어요</div><div class="nl"></div><button class="all">모두 떼기</button></div>
@@ -292,7 +292,8 @@ function applyVV(){if(!vv||pipWin)return;const top=Math.max(0,vv.offsetTop),h=vv
 if(vv){vv.addEventListener('resize',applyVV);vv.addEventListener('scroll',applyVV)}
 const canvas=$('#c');
 const renderer=new THREE.WebGLRenderer({canvas,antialias:true});
-renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
+let ECO=true;try{ECO=localStorage.getItem('uhwa-eco')!=='0'}catch(e){}
+renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,ECO?1.25:2));
 renderer.outputEncoding=THREE.sRGBEncoding;
 renderer.toneMapping=THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure=1.05;
@@ -400,7 +401,7 @@ function drawWindow(env,t){
 
 /* ---------- lights ---------- */
 const hemi=new THREE.HemisphereLight('#fff2e2','#5a3a36',.5);scene.add(hemi);
-const sunL=new THREE.DirectionalLight('#fff0d8',1.6);sunL.castShadow=true;sunL.shadow.mapSize.set(2048,2048);
+const sunL=new THREE.DirectionalLight('#fff0d8',1.6);sunL.castShadow=true;sunL.shadow.mapSize.set(ECO?1024:2048,ECO?1024:2048);
 Object.assign(sunL.shadow.camera,{left:-16,right:16,top:15,bottom:-15,near:1,far:55});sunL.shadow.bias=-.0006;sunL.shadow.normalBias=.03;scene.add(sunL);scene.add(sunL.target);
 const moonL=new THREE.DirectionalLight('#7f93c8',.0);moonL.position.set(-4,8,-10);scene.add(moonL);
 const lamps=[];const bulbMats=[];
@@ -2275,10 +2276,12 @@ function placeLabel(lbl,g,now){
   if(lbl._x!==x||lbl._y!==y){lbl._x=x;lbl._y=y;lbl.el.style.transform=`translate3d(${x}px,${y}px,0) translate(-50%,-100%)`}
   if(lbl.bubUntil&&now>lbl.bubUntil){lbl.b.classList.remove('on');lbl.bubUntil=0}
 }
-let last=performance.now();
+let last=performance.now(),lastDraw=0;
 function loop(now,gen,once){
   if(gen!==undefined&&gen!==loopGen)return;if(!once)(pipWin||window).requestAnimationFrame(t=>loop(t,loopGen));now=performance.now();
-  const dt=Math.min(.05,(now-last)/1000);last=now;const t=now/1000;
+  // 절전: 30fps cap; tab hidden (and no PiP) -> about 1 frame a second
+  if(!once){const gap=document.hidden&&!pipWin&&!vidPip?950:ECO?31:0;if(now-lastDraw<gap)return;lastDraw=now}
+  const dt=Math.min(document.hidden&&!pipWin&&!vidPip?1:.05,(now-last)/1000);last=now;const t=now/1000;
   applyEnv(dt);updateWeather(dt,t);updatePlayer(dt);updateRemotes(dt,t);updateCamera(dt);
   if(++frame%8===0){drawWindow(cur,t);drawSky(cur)}
   if(player.a==='pet'&&now>petUntil)player.a='';if(player.a==='yay'&&now>yayUntil)player.a='';updatePetals(dt,t);updateOrder(dt);updateSip(dt);updateBite(dt);renderDessert();updateWork(dt);updateJob(dt);updateToy();if(OFFICE)updateOffice(dt);else{updateBarista(dt,t);updateNPC(dt,t);npcChatter(dt);if(roastArms)roastArms.rotation.y+=dt*1.1;placeLabel(shopLbl,shopProxy,performance.now())}
@@ -2740,6 +2743,9 @@ async function openPip(){
   toast('이 브라우저는 PiP를 지원하지 않아요 · 크롬이나 엣지(PC)에서 써 보세요')}
 function closedPip(){if(!pipWin)return;pipWin=null;clearInterval(pipBarT);document.body.append(...PIP_MOVE);document.body.prepend(labelsEl);document.body.prepend(canvas);$('#pipNote').classList.remove('on');$('#tPip').classList.remove('on');resize();loopGen++;requestAnimationFrame(t=>loop(t,loopGen))}
 $('#tPip').addEventListener('click',e=>{e.stopPropagation();openPip()});
+function setEco(on){ECO=on;try{localStorage.setItem('uhwa-eco',on?'1':'0')}catch(e){}$('#tEco').textContent=on?'🔋 절전 켬':'⚡ 고화질';$('#tEco').classList.toggle('on',on);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,on?1.25:2));const n=on?1024:2048;if(sunL.shadow.mapSize.x!==n){sunL.shadow.mapSize.set(n,n);if(sunL.shadow.map){sunL.shadow.map.dispose();sunL.shadow.map=null}}resize()}
+setEco(ECO);$('#tEco').addEventListener('click',e=>{e.stopPropagation();setEco(!ECO);toast(ECO?'🔋 절전 모드 · 30fps · 화질과 그림자를 낮춰 발열을 줄여요':'⚡ 고화질 모드 · 60fps · 더 선명하지만 발열이 늘어요')});
 $('#pipBack').addEventListener('click',()=>{if(pipWin)pipWin.close()});
 // keep the video-PiP alive when this tab is in the background
 setInterval(()=>{if(vidPip&&document.hidden)loop(performance.now(),loopGen,true)},120);
