@@ -42,7 +42,7 @@ body.kb #bar .act,body.kb #joy,body.kb #log{display:none!important}body.kb #toas
 #hud h1 span{font-weight:400;opacity:.7;margin-left:6px;font-size:15px}
 #clock,#count{margin-top:3px;font-size:13px;opacity:.9;text-shadow:0 1px 6px rgba(0,0,0,.7)}
 #clock{font-family:'Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic',sans-serif}
-#cash{margin-top:6px;display:inline-block;font-size:13px;padding:3px 10px;border-radius:12px;background:rgba(43,33,29,.6);text-shadow:none}#caff{display:inline-block;margin-top:6px;padding:4px 10px;border-radius:12px;background:rgba(120,72,40,.75);color:#fff;font-size:12.5px;animation:caffP 1.6s ease-in-out infinite}#caff.gold{background:linear-gradient(90deg,#b8860b,#f5c542);color:#2b1d05;box-shadow:0 0 12px rgba(255,200,60,.7)}@keyframes caffP{50%{background:rgba(160,96,50,.85)}}
+#cash{margin-top:6px;display:inline-block;font-size:13px;padding:3px 10px;border-radius:12px;background:rgba(43,33,29,.6);text-shadow:none}#caff{display:inline-block;margin-top:6px;padding:4px 10px;border-radius:12px;background:rgba(120,72,40,.75);color:#fff;font-size:12.5px;animation:caffP 1.6s ease-in-out infinite}#liveBest{display:block;width:max-content;margin-top:6px;padding:3px 10px;border-radius:12px;background:rgba(43,33,29,.6);font-size:12.5px;color:#ffd98a;text-shadow:none}#caff.gold{background:linear-gradient(90deg,#b8860b,#f5c542);color:#2b1d05;box-shadow:0 0 12px rgba(255,200,60,.7)}@keyframes caffP{50%{background:rgba(160,96,50,.85)}}
 #toast{position:fixed;left:50%;top:64px;transform:translateX(-50%) translateY(-6px);padding:8px 16px;border-radius:14px;background:rgba(43,33,29,.88);font-size:13.5px;opacity:0;transition:all .3s;pointer-events:none;z-index:6;white-space:nowrap}
 #toast.on{opacity:1;transform:translateX(-50%)}
 #banner{position:fixed;left:50%;top:30%;transform:translate(-50%,-50%) scale(.6);text-align:center;opacity:0;pointer-events:none;z-index:7;transition:opacity .4s}
@@ -141,7 +141,7 @@ body.touch #log{bottom:280px}
 <body>
 <canvas id="c"></canvas>
 <div id="labels"></div>
-<div id="hud"><h1>HOGI ROASTERS<span>호기로스터스</span></h1><div id="clock"></div><div id="count">문을 여는 중…</div><div id="cash">💰 0원</div><div id="caff" style="display:none"></div><div id="chTag"></div><div id="sales"></div></div>
+<div id="hud"><h1>HOGI ROASTERS<span>호기로스터스</span></h1><div id="clock"></div><div id="count">문을 여는 중…</div><div id="cash">💰 0원</div><div id="caff" style="display:none"></div><div id="liveBest" style="display:none"></div><div id="chTag"></div><div id="sales"></div></div>
 <div id="snd"><button class="pill" id="tCh" title="채널 바꾸기" style="display:none">🔁 채널</button><button class="pill" id="tTime" title="시간대·날씨 바꾸기 (나에게만)">🕰 실시간</button><button class="pill" id="tMusic">음악</button><button class="pill" id="tEco" title="절전 모드: 30fps · 화질↓ · 그림자↓ (맥북 발열 줄이기)"></button><button class="pill" id="tPip" title="작은 창으로 띄워 놓고 다른 일 하기">🪟 PiP</button><button class="pill" id="tGB">📖 방명록</button><button class="pill" id="tAmb" title="낮엔 새소리, 밤엔 풀벌레 소리">🌿 바깥 소리</button></div>
 <div class="sndPop" id="musPop"><div class="sp-t">오늘의 음악</div><div class="sp-s ofcOnly">🎵 사무실 BGM은 현주님 컴퓨터에서만 고를 수 있어요 · 볼륨은 각자</div><div class="glist"></div><label class="vrow">볼륨<input type="range" id="mVol" min="0" max="100" step="1"><b id="mVolV"></b></label></div>
 <div class="sndPop" id="gbPop"><div class="sp-t">📖 오늘의 방명록 <span id="gbCh" style="font-weight:400;opacity:.6;font-size:11px"></span></div><div class="sp-s">이 채널 모두가 함께 봐요 · 한국 시간 자정에 새 페이지 <span id="gbSt"></span></div><div id="gbList"></div><form id="gbForm" autocomplete="off"><input id="gbIn" maxlength="100" placeholder="한 줄 남기기 (100자)"><button>남기기</button></form></div>
@@ -2542,11 +2542,11 @@ const EARN=new Map();let myEid='';try{myEid=localStorage.getItem('uhwa-eid')||''
 function kstDateOff(days){const d=new Date(Date.now()+TZ_OFF*3600e3-days*864e5);return d.getUTCFullYear()+'-'+(d.getUTCMonth()+1)+'-'+d.getUTCDate()}
 function winDate(){return kstNow().h>=18?kstDate():kstDateOff(1)}
 function addEarn(pay){if(!workHours())return;const dd=kstDate();let a=0;try{a=parseInt(localStorage.getItem('uhwa-earn-'+dd)||'0',10)||0}catch(e){}a+=pay;try{localStorage.setItem('uhwa-earn-'+dd,String(a))}catch(e){}
-  if(!EARN.has(dd))EARN.set(dd,new Map());EARN.get(dd).set(myEid,{n:me.name,a});pubR('earn/'+dd+'/'+myEid,{n:me.name,a})}
+  if(!EARN.has(dd))EARN.set(dd,new Map());EARN.get(dd).set(myEid,{n:me.name,a});renderLiveBest();pubR('earn/'+dd+'/'+myEid,{n:me.name,a})}
 function onEarn(rest,d,topic){const [dd,id]=rest.split('/');if(!id||!/^[a-z0-9]{4,16}$/.test(id)||!/^\d{4}-\d{1,2}-\d{1,2}$/.test(dd))return;
   if(dd!==kstDate()&&dd!==kstDateOff(1)){if(d&&ch&&live)try{ch.publish(topic,'',{qos:1,retain:true})}catch(e){}return}
   if(!d||typeof d!=='object')return;const a=Math.max(0,Math.min(1e8,Number(d.a)||0)),n=typeof d.n==='string'?d.n.slice(0,24):'';if(!n)return;
-  if(!EARN.has(dd))EARN.set(dd,new Map());const p=EARN.get(dd).get(id);if(!p||a>=p.a){EARN.get(dd).set(id,{n,a});drawBoard()}}
+  if(!EARN.has(dd))EARN.set(dd,new Map());const p=EARN.get(dd).get(id);if(!p||a>=p.a){EARN.get(dd).set(id,{n,a});drawBoard();renderLiveBest()}}
 let boardKey='';
 function drawBoard(){if(!OFC.boardTex)return;const dd=winDate(),M2=EARN.get(dd);let best=null;if(M2)for(const v of M2.values())if(v.a>0&&(!best||v.a>best.a))best=v;
   const key=dd+'|'+(best?best.n+best.a:'');if(key===boardKey)return;boardKey=key;
@@ -2559,6 +2559,9 @@ function drawBoard(){if(!OFC.boardTex)return;const dd=winDate(),M2=EARN.get(dd);
   else{g.fillStyle='#ffffff';g.font='bold 32px "Noto Sans KR",sans-serif';g.fillText('아직 우수사원이 없어요',w/2,186);}
   g.fillStyle='rgba(255,255,255,.45)';g.font='16px "Noto Sans KR",sans-serif';g.fillText('매일 18시 퇴근 때 그날 가장 많이 번 사람으로 바뀌어요',w/2,296);OFC.boardTex.needsUpdate=true}
 setInterval(()=>{if(OFFICE)drawBoard()},15000);
+function renderLiveBest(){const el=$('#liveBest');if(!el)return;if(!OFFICE){el.style.display='none';return}const M2=EARN.get(kstDate());const top=M2?[...M2.values()].filter(v=>v.a>0).sort((x,y)=>y.a-x.a).slice(0,2):[];
+  const t=top.length?'🏆 실시간 우수사원 · '+top.map((v,i)=>`${i?'🥈':'🥇'} ${v.n} ${won(v.a)}`).join('  '):'🏆 실시간 우수사원 · 아직 없어요';if(el.textContent!==t)el.textContent=t;el.style.display=''}
+setInterval(renderLiveBest,3000);
 function enterOffice(){OFFICE=true;document.body.classList.add('office');try{renderWork()}catch(e){}
   // hide every cafe interior object (keep the shell, street and people), drop cafe colliders
   const keep=new Set([player.g,marker,...ROAST_OBJS]);frontSill.visible=false;readerMug.visible=false;for(const o of [...SHL,...FAC_OBJS])o.visible=false;
