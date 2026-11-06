@@ -142,13 +142,13 @@ body.touch #log{bottom:280px}
 <canvas id="c"></canvas>
 <div id="labels"></div>
 <div id="hud"><h1>HOGI ROASTERS<span>호기로스터스</span></h1><div id="clock"></div><div id="count">문을 여는 중…</div><div id="cash">💰 0원</div><div id="caff" style="display:none"></div><div id="rank" style="display:none"></div><div id="chTag"></div><div id="sales"></div></div>
-<div id="snd"><button class="pill" id="tCh" title="채널 바꾸기" style="display:none">🔁 채널</button><button class="pill" id="tTime" title="시간대·날씨 바꾸기 (나에게만)">🕰 실시간</button><button class="pill" id="tMusic">음악</button><button class="pill" id="tEco" title="절전 모드: 30fps · 화질↓ · 그림자↓ (맥북 발열 줄이기)"></button><button class="pill" id="tPip" title="작은 창으로 띄워 놓고 다른 일 하기">🪟 PiP</button><button class="pill" id="tGB">📖 방명록</button><button class="pill" id="tAmb" title="낮엔 새소리, 밤엔 풀벌레 소리">🌿 바깥 소리</button></div>
+<div id="snd"><button class="pill" id="tCh" title="채널 바꾸기" style="display:none">🔁 채널</button><button class="pill" id="tFpv" title="1인칭 시점 켜기/끄기">👁 1인칭</button><button class="pill" id="tTime" title="시간대·날씨 바꾸기 (나에게만)">🕰 실시간</button><button class="pill" id="tMusic">음악</button><button class="pill" id="tEco" title="절전 모드: 30fps · 화질↓ · 그림자↓ (맥북 발열 줄이기)"></button><button class="pill" id="tPip" title="작은 창으로 띄워 놓고 다른 일 하기">🪟 PiP</button><button class="pill" id="tGB">📖 방명록</button><button class="pill" id="tAmb" title="낮엔 새소리, 밤엔 풀벌레 소리">🌿 바깥 소리</button></div>
 <div class="sndPop" id="musPop"><div class="sp-t">오늘의 음악</div><div class="sp-s ofcOnly">🎵 사무실 BGM은 현주님 컴퓨터에서만 고를 수 있어요 · 볼륨은 각자</div><div class="glist"></div><label class="vrow">볼륨<input type="range" id="mVol" min="0" max="100" step="1"><b id="mVolV"></b></label></div>
 <div class="sndPop" id="gbPop"><div class="sp-t">📖 오늘의 방명록 <span id="gbCh" style="font-weight:400;opacity:.6;font-size:11px"></span></div><div class="sp-s">이 채널 모두가 함께 봐요 · 한국 시간 자정에 새 페이지 <span id="gbSt"></span></div><div id="gbList"></div><form id="gbForm" autocomplete="off"><input id="gbIn" maxlength="100" placeholder="한 줄 남기기 (100자)"><button>남기기</button></form></div>
 <div class="sndPop" id="notePop"><div class="sp-t">📝 내 등에 붙은 포스트잇</div><div class="sp-s">누가 몰래 붙였을까요? 하나씩 뗄 수 있어요</div><div class="nl"></div><button class="all">모두 떼기</button></div>
 <div class="sndPop" id="ambPop"><div class="sp-t">바깥 소리</div><div class="sp-s">낮엔 새소리 · 밤엔 풀벌레</div><label class="vrow">볼륨<input type="range" id="aVol" min="0" max="100" step="1"><b id="aVolV"></b></label></div>
 <div id="log"></div>
-<div id="shopPop"><button class="x" id="shopX">✕</button><div class="ic">☕</div><div class="q">HOGI ROASTERS 원두</div><div class="s">매장에서 직접 볶은 원두를<br>스마트스토어에서 만나보세요</div><a id="shopGo" href="https://smartstore.naver.com/hogi_roasters" target="_blank" rel="noopener">🛒 원두 구매하러 가기</a><div class="u">smartstore.naver.com/hogi_roasters</div></div><button id="myNotes" style="display:none"></button><div id="stickPop"><button class="x" id="stickX">✕</button><div class="who"></div><div class="s">등에 몰래 포스트잇 붙이기 (30자 · 최대 5장)</div><div class="nl"></div><div class="in"><input id="stickIn" maxlength="30" placeholder="예) 커피 쏘는 사람 ㅋㅋ" autocomplete="off"><button id="stickGo">붙이기</button></div><div class="fr" style="display:none">호기로스터스에서는 포스트잇을 쓸 수 없어요</div></div><div id="pipNote"><div>🪟 카페가 작은 창(PiP)에서 열려 있어요</div><button id="pipBack">여기로 돌아오기</button></div><div id="hint"></div><div id="toast"></div><div id="banner"><div class="big"></div><div class="sub"></div></div><div id="timePop" style="position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);padding:20px 22px 18px;border-radius:20px;background:rgba(43,33,29,.95);border:1px solid rgba(246,238,227,.18);text-align:center;z-index:9;width:min(320px,calc(100% - 40px));display:none"><button class="x" id="tpX">✕</button><div class="q" style="font-family:'Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic',sans-serif;font-size:17px;margin-bottom:4px">시간대 바꾸기</div><div class="s" id="tpMsg" style="font-size:12.5px;opacity:.75;margin-bottom:14px">고르면 나에게만 적용돼요</div><div class="row" id="tpRow" style="display:none;gap:8px"></div></div><div id="bungPop"><div class="bt">🐟✨ 황금 붕어빵</div><div class="bp">1개 <b>3,000원</b> <span id="bungCash"></span></div><div class="bd">먹으면 <b>60초</b> 동안<br>🏃 걸음이 빨라지고<br>💰 일하면 10초마다 <b>1,500원</b> (근무시간 09~18시)</div><div class="bn">한 번에 1개만 · 산 뒤 5분이 지나야 다시 살 수 있어요<br>커피 효과와는 겹쳐 쓸 수 없어요 · 사 두었다가 원할 때 먹어요</div><div id="bungMsg"></div><div class="row"><button id="bungBuy">구매하기</button><button id="bungNo">다음에</button></div></div><div id="misPop"><div class="q">🎯 미션</div><button id="misDance">💃 춤추기<small>대표님이 사무실에 계실 때만 · 10초마다 1,000원 · 걸리면 -10,000원</small></button><button id="misNote">📝 대표님 등에 포스트잇 ㅋㅋ<small>"대표님 바보" · 성공하면 동료 지원금 +10,000원</small></button></div><div id="quitPop"><div class="q">😤 대표님께 혼났어요…</div><div class="row"><button id="quitGo">😤 퇴사할게요!</button><button id="quitNo">😔 참는다</button></div></div><div id="offPop"><div class="q">오늘도 수고했어요</div><div class="s">퇴근할까요, 조금만 더 할까요?</div><div class="row"><button id="goHome">🌸 퇴근한다</button><button id="stay">🌙 야근한다</button></div></div>
+<div id="shopPop"><button class="x" id="shopX">✕</button><div class="ic">☕</div><div class="q">HOGI ROASTERS 원두</div><div class="s">매장에서 직접 볶은 원두를<br>스마트스토어에서 만나보세요</div><a id="shopGo" href="https://smartstore.naver.com/hogi_roasters" target="_blank" rel="noopener">🛒 원두 구매하러 가기</a><div class="u">smartstore.naver.com/hogi_roasters</div></div><button id="myNotes" style="display:none"></button><div id="stickPop"><button class="x" id="stickX">✕</button><div class="who"></div><div class="s">등에 몰래 포스트잇 붙이기 (30자 · 최대 5장)</div><div class="nl"></div><div class="in"><input id="stickIn" maxlength="30" placeholder="예) 커피 쏘는 사람 ㅋㅋ" autocomplete="off"><button id="stickGo">붙이기</button></div><div class="fr" style="display:none">호기로스터스에서는 포스트잇을 쓸 수 없어요</div></div><div id="pipNote"><div>🪟 카페가 작은 창(PiP)에서 열려 있어요</div><button id="pipBack">여기로 돌아오기</button></div><div id="hint"></div><div id="toast"></div><div id="banner"><div class="big"></div><div class="sub"></div></div><div id="timePop" style="position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);padding:20px 22px 18px;border-radius:20px;background:rgba(43,33,29,.95);border:1px solid rgba(246,238,227,.18);text-align:center;z-index:9;width:min(320px,calc(100% - 40px));display:none"><button class="x" id="tpX">✕</button><div class="q" style="font-family:'Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic',sans-serif;font-size:17px;margin-bottom:4px">시간대 바꾸기</div><div class="s" id="tpMsg" style="font-size:12.5px;opacity:.75;margin-bottom:14px">고르면 나에게만 적용돼요</div><div class="row" id="tpRow" style="display:none;gap:8px"></div></div><div id="bungPop"><div class="bt">🐟✨ 황금 붕어빵</div><div class="bp">1개 <b>3,000원</b> <span id="bungCash"></span></div><div class="bd">먹으면 <b>60초</b> 동안<br>🏃 걸음이 빨라지고<br>💰 일하면 10초마다 <b>1,500원</b> (근무시간 09~18시)</div><div class="bn">한 번에 1개만 · 산 뒤 5분이 지나야 다시 살 수 있어요<br>커피 효과와는 겹쳐 쓸 수 없어요 · 사 두었다가 원할 때 먹어요</div><div id="bungMsg"></div><div class="row"><button id="bungBuy">구매하기</button><button id="bungNo">다음에</button></div></div><div id="misPop"><div class="q">🎯 미션</div><button id="misDance">💃 춤추기<small>대표님이 사무실에 계실 때만 · 10초마다 1,000원 · 걸리면 -10,000원</small></button><button id="misNote">📝 대표님 등에 포스트잇 ㅋㅋ<small>"대표님 바보" · 성공하면 동료 지원금 +10,000원 · 들키면 -20,000원</small></button></div><div id="quitPop"><div class="q">😤 대표님께 혼났어요…</div><div class="row"><button id="quitGo">😤 퇴사할게요!</button><button id="quitNo">😔 참는다</button></div></div><div id="offPop"><div class="q">오늘도 수고했어요</div><div class="s">퇴근할까요, 조금만 더 할까요?</div><div class="row"><button id="goHome">🌸 퇴근한다</button><button id="stay">🌙 야근한다</button></div></div>
 <div id="joy"><div id="knob"></div></div>
 <div id="bar">
   <button class="act" data-a="sip" id="sipBtn"><b>1</b>☕ 주문</button>
@@ -2278,7 +2278,11 @@ function updatePlayer(dt){
   if(entered){const ns=player.s>=0?-2:nearestSeat();sitBtn.disabled=ns===-1;sitBtn.innerHTML=player.s>=0?'<b>4</b>🚶 일어나기':'<b>4</b>🪑 앉기';
     hintEl.textContent=ns>=0?'4 를 누르면 앉을 수 있어요':'';hintEl.classList.toggle('on',ns>=0&&!document.body.classList.contains('touch'))}
 }
+let fpv=false;
+function setFpv(on){if(!entered)return;fpv=on?{s:player.s}:false;if(on){yaw=(player.s>=0?SEATS[player.s].r:player.r)+Math.PI;pitch=.45}else{pitch=.38}player.g.visible=true;player.lbl.el.style.display=on?'none':'';const b=$('#tFpv');if(b){b.textContent=on?'🎥 3인칭':'👁 1인칭';b.classList.toggle('on',on)}}
 function updateCamera(dt){
+  {const wf=entered&&fpv?(VW()<VH()?95:80):(VW()<VH()?64:50);if(camera.fov!==wf){camera.fov=wf;camera.updateProjectionMatrix()}}
+  if(entered&&fpv){if(player.s!==fpv.s){fpv.s=player.s;if(player.s>=0){yaw=SEATS[player.s].r+Math.PI;pitch=.5}}player.g.visible=false;const ey=player.g.position.y+(player.s>=0?1.08:1.42),fx=-Math.sin(yaw),fz=-Math.cos(yaw);camX=player.x-fx*.18;camZ=player.z-fz*.18;camY=ey;camera.position.set(camX,camY,camZ);const lk=(pitch-.38)*1.3;camera.lookAt(camX+fx*3,ey-lk*3,camZ+fz*3);return}
   const tx=entered?player.x:0,tz=entered?player.z:1.2;const d=entered?dist:8.5,p=entered?pitch:.42;
   let cx=tx+Math.sin(yaw)*d*Math.cos(p),cz=tz+Math.cos(yaw)*d*Math.cos(p),cy=1+d*Math.sin(p);
   cx=clamp(cx,-16,16);cz=clamp(cz,-19.6,D+3);cy=clamp(cy,.8,H-.32);
@@ -2690,6 +2694,7 @@ function updateBoss(dt,t){if(!OFFICE)return;if(!boss){boss={g:lightShadow(makeCh
   let sched=sec>=0&&sec<=plan.len?bossAt(sec,plan):null;const onDuty=bossOnDuty();if(!onDuty)sched=null;
   if(boss.duty!==onDuty){if(boss.duty===true&&!onDuty&&boss.g.visible){boss.chase=null;say(boss.lbl,'퇴근합니다~ 다들 수고했어요!',3500);if(entered&&player.z>-D)toast('🌙 대표님 퇴근하셨어요 (19:00)')}boss.duty=onDuty}
   const bsi=bossSeatIdx();if(OFC.meetUntil>performance.now()&&BOSS_SEAT_TAKEN===bsi)sched={x:BOSS_CHAIR[0],z:BOSS_CHAIR[1],r:BOSS_CHAIR_R,moving:false,sit:true};if(sched&&sched.sit&&BOSS_SEAT_TAKEN!==bsi&&(bsi<0||occupied(bsi)||player.s===bsi))sched={x:BOSS_STAND[0],z:BOSS_STAND[1],r:BOSS_CHAIR_R,moving:false};
+  const cm=onDuty?clientMeet():null;if(cm)sched={x:cm.x,z:cm.z,r:cm.r,moving:false,sit:true,cs:cm.si};
   if(boss.chase&&(performance.now()>boss.chase.until||!bossTargetPos(boss.chase.id)))boss.chase=null;
   if(!sched&&!boss.chase&&boss.g.visible&&Math.hypot(boss.x-BOSS_DOOR[0],boss.z-BOSS_DOOR[1])>.3)sched={x:BOSS_DOOR[0],z:BOSS_DOOR[1],r:Math.PI,moving:true,leave:1};
   if(!sched&&!boss.chase){if(boss.noted){boss.noted=false;boss.noteAt=0;setNotes(boss.g,[])}boss.g.visible=false;boss.lbl.el.style.display='none';boss.st.s=-1;BOSS_SEAT_TAKEN=-1;return}
@@ -2702,12 +2707,14 @@ function updateBoss(dt,t){if(!OFFICE)return;if(!boss){boss={g:lightShadow(makeCh
     while(boss.route.length>1&&Math.hypot(boss.route[0][0]-boss.x,boss.route[0][1]-boss.z)<.18)boss.route.shift();if(boss.route.length>1)wp={x:boss.route[0][0],z:boss.route[0][1],via:1}}else boss.route=null;
   if(tg){const dx=wp.x-boss.x,dz=wp.z-boss.z,d=Math.hypot(dx,dz),stop=wp.via?0:boss.chase?.85:.02,sp=boss.chase?BOSS_RUN:Math.max(BOSS_SPEED,d>.6?BOSS_RUN:BOSS_SPEED);
     if(d>stop){const st=Math.min(d-stop,sp*dt);boss.x+=dx/d*st;boss.z+=dz/d*st;moving=st>.002;face=Math.atan2(dx,dz)}else if(boss.chase)face=Math.atan2(dx,dz);
-    if(sched&&!boss.chase&&!wp.via&&!sched.moving&&d<.05){moving=false;if(sched.sit){seated=true;boss.x=tg.x;boss.z=tg.z;face=BOSS_CHAIR_R}}}
-  boss.st.s=seated?bsi:-1;BOSS_SEAT_TAKEN=seated?bsi:-1;
-  boss.g.position.set(boss.x,seated?SEATS[bsi].y:0,boss.z);let dr=face-boss.g.rotation.y;dr=Math.atan2(Math.sin(dr),Math.cos(dr));boss.g.rotation.y+=dr*Math.min(1,dt*(boss.chase?12:seated?20:6));
-  boss.st.a=moving?'':boss.chase?'talk':seated?'work':'listen';animChar(boss.g,boss.st,t*(boss.chase&&moving?1.8:1),moving,dt*(boss.chase&&moving?1.9:1));boss.g.userData.blob.position.y=seated?-SEATS[bsi].y+.012:.012;placeLabel(boss.lbl,boss.g,performance.now());
-  if(sched&&!boss.chase&&!(OFC.meetUntil>performance.now())&&sec>=plan.exitAt&&boss.bye!==slot){boss.bye=slot;say(boss.lbl,pick(['미팅 다녀올게요~','나 미팅 다녀올게!','미팅 갔다 올게요, 다들 수고!','외부 미팅 다녀옵니다']),3500);if(entered&&player.z>-D)toast('💼 대표님이 미팅 가신대요');}
-  if(seated&&!boss.saidDesk){boss.saidDesk=1;say(boss.lbl,pick(['결재 서류가 산더미네…','메일 좀 확인해 볼까','흠… 이번 달 실적이…','회의 자료 봐야겠다']),3500)}if(!seated)boss.saidDesk=0;
+    if(sched&&!boss.chase&&!wp.via&&!sched.moving&&d<.05){moving=false;if(sched.sit){seated=true;boss.x=tg.x;boss.z=tg.z;face=sched.cs!=null?sched.r:BOSS_CHAIR_R}}}
+  const bseat=sched&&sched.cs!=null?sched.cs:bsi;
+  boss.st.s=seated?bseat:-1;BOSS_SEAT_TAKEN=seated?bseat:-1;
+  boss.g.position.set(boss.x,seated?SEATS[bseat].y:0,boss.z);let dr=face-boss.g.rotation.y;dr=Math.atan2(Math.sin(dr),Math.cos(dr));boss.g.rotation.y+=dr*Math.min(1,dt*(boss.chase?12:seated?20:6));
+  const inCM=seated&&sched&&sched.cs!=null;boss.st.a=moving?'':boss.chase?'talk':inCM?'talk':seated?'work':'listen';animChar(boss.g,boss.st,t*(boss.chase&&moving?1.8:1),moving,dt*(boss.chase&&moving?1.9:1));boss.g.userData.blob.position.y=seated?-SEATS[bseat].y+.012:.012;
+  if(inCM){const pn=performance.now();if(!boss.cmIn){boss.cmIn=1;boss.cmAt=pn+1500;say(boss.lbl,pick(['어서 오세요! 앉으시죠~','먼 길 오셨네요, 반갑습니다!','오셨어요? 이쪽으로 앉으세요']),3500)}else if(pn>boss.cmAt){boss.cmAt=pn+11000+Math.random()*6000;const sv=client&&SERVED.has(client.vid);say(boss.lbl,pick(sv?BOSS_CM:BOSS_CM.concat(BOSS_CM_COF)),4200);if(client)client.talkAt=Math.max(client.talkAt,pn+5000)}}else if(boss.cmIn&&!cm){boss.cmIn=0;say(boss.lbl,'오늘 미팅 감사했습니다! 조심히 들어가세요 👋',3500)}placeLabel(boss.lbl,boss.g,performance.now());
+  if(sched&&!cm&&!boss.chase&&!(OFC.meetUntil>performance.now())&&sec>=plan.exitAt&&boss.bye!==slot){boss.bye=slot;say(boss.lbl,pick(['미팅 다녀올게요~','나 미팅 다녀올게!','미팅 갔다 올게요, 다들 수고!','외부 미팅 다녀옵니다']),3500);if(entered&&player.z>-D)toast('💼 대표님이 미팅 가신대요');}
+  if(seated&&!inCM&&!boss.saidDesk){boss.saidDesk=1;say(boss.lbl,pick(['결재 서류가 산더미네…','메일 좀 확인해 볼까','흠… 이번 달 실적이…','회의 자료 봐야겠다']),3500)}if(!seated)boss.saidDesk=0;
   if(boss.noted&&boss.noteAt&&performance.now()-boss.noteAt>300000){boss.noted=false;boss.noteAt=0;setNotes(boss.g,[]);boss.angryUntil=performance.now()+60000;say(boss.lbl,'…뭐야 이거?! "대표님 바보"?! 누구야!!!',4500);if(entered&&player.z>-D)banner('😠 대표님이 포스트잇을 발견했어요!','1분 동안 예민 모드 · 걸리면 -20,000원','msg',5000);sfx('lid')}
   const angry=boss.angryUntil>performance.now();if(angry&&!boss.angryShown){boss.angryShown=1;boss.lbl.n.textContent='😠 예민한 대표님'}if(!angry&&boss.angryShown){boss.angryShown=0;boss.lbl.n.textContent='대표님'}
   // busy at his desk -> doesn't watch anyone; one scold per 30s at most
@@ -2716,10 +2723,10 @@ function updateBoss(dt,t){if(!OFFICE)return;if(!boss){boss={g:lightShadow(makeCh
   const dx=player.x-boss.x,dz=player.z-boss.z,dist=Math.hypot(dx,dz),idle=player.a!=='work';
   // caught in the boss's line of sight (or right next to him) while not working -> he charges over
   if(!boss.chase&&idle){const ang=Math.abs(Math.atan2(Math.sin(Math.atan2(dx,dz)-boss.g.rotation.y),Math.cos(Math.atan2(dx,dz)-boss.g.rotation.y)));
-    if(dist<1.6||(dist<7.5&&ang<1.0)){boss.chase={id:myId,until:performance.now()+7000,dance:player.a==='dance'};say(boss.lbl,pick([`어?! ${me.name}님!!`,`거기 ${me.name}님!`,`${me.name}님 잠깐만요!`]),2500);pub('bchase',{id:myId,s:slot,m:`${me.name}님!!`});toast('😱 대표님 눈에 딱 걸렸어요! 달려오고 있어요…');sfx('lid')}}
+    if(dist<1.6||(dist<7.5&&ang<1.0)){const sneak=!!(moveTo&&moveTo.bnote);if(sneak){moveTo=null;marker.material.opacity=0}boss.chase={id:myId,until:performance.now()+7000,dance:player.a==='dance',note:sneak};say(boss.lbl,pick([`어?! ${me.name}님!!`,`거기 ${me.name}님!`,`${me.name}님 잠깐만요!`]),2500);pub('bchase',{id:myId,s:slot,m:`${me.name}님!!`});toast('😱 대표님 눈에 딱 걸렸어요! 달려오고 있어요…');sfx('lid')}}
   if(boss.chase&&boss.chase.id===myId&&dist<1.1){bossScoldAt=performance.now();boss.chase.until=performance.now()+2500;
-    const fine=boss.angryUntil>performance.now()?20000:boss.chase.dance?10000:1000;cash-=fine;if(boss.chase.dance&&player.a==='dance'){player.a='';renderDance()}clearTimeout(quitT);quitT=setTimeout(()=>{$('#quitPop').classList.add('on');quitShownAt=performance.now()},1600);saveCash();renderCash();floatText('-'+won(fine),player.x,1.9,player.z);
-    const line=boss.angryUntil>performance.now()?pick([`${me.name}님!! 지금 기분 안 좋아요! 감봉 2만 원!!`,`${me.name}님 혹시 포스트잇도 ${me.name}님이에요?!`]):boss.chase.dance?pick([`${me.name}님!! 지금 춤출 시간이에요?!`,`${me.name}님 회사가 클럽이에요?! 감봉 만 원!`]):pick([`${me.name}님! 왜 놀고 있어요?!`,`${me.name}님, 지금 근무 시간이에요!`,`${me.name}님 일 안 해요? 감봉입니다!`]);say(boss.lbl,line,4500);toast(`😡 대표님께 혼났어요… ${won(fine)} 차감`+(cash<0?' · 마이너스 통장 😭':''));pub('scold',{n:me.name,m:line})}}
+    const fine=boss.angryUntil>performance.now()||boss.chase.note?20000:boss.chase.dance?10000:1000;cash-=fine;if(boss.chase.dance&&player.a==='dance'){player.a='';renderDance()}clearTimeout(quitT);quitT=setTimeout(()=>{$('#quitPop').classList.add('on');quitShownAt=performance.now()},1600);saveCash();renderCash();floatText('-'+won(fine),player.x,1.9,player.z);
+    const line=boss.chase.note?pick([`${me.name}님!! 지금 내 등에 뭘 붙이려던 거예요?! 감봉 2만 원!`,`${me.name}님 손에 그 포스트잇 뭐예요?! 2만 원 감봉!`]):boss.angryUntil>performance.now()?pick([`${me.name}님!! 지금 기분 안 좋아요! 감봉 2만 원!!`,`${me.name}님 혹시 포스트잇도 ${me.name}님이에요?!`]):boss.chase.dance?pick([`${me.name}님!! 지금 춤출 시간이에요?!`,`${me.name}님 회사가 클럽이에요?! 감봉 만 원!`]):pick([`${me.name}님! 왜 놀고 있어요?!`,`${me.name}님, 지금 근무 시간이에요!`,`${me.name}님 일 안 해요? 감봉입니다!`]);say(boss.lbl,line,4500);toast(`😡 대표님께 혼났어요… ${won(fine)} 차감`+(cash<0?' · 마이너스 통장 😭':''));pub('scold',{n:me.name,m:line})}}
 function onBossChase(d){if(!OFFICE||!boss||!d||typeof d.id!=='string')return;boss.chase={id:d.id,until:performance.now()+7000};if(typeof d.m==='string')say(boss.lbl,d.m.slice(0,40),2500)}
 // 회의: sit in the chair across the boss's desk while he's at his desk -> 30s meeting
 const MEET_B=['자, 회의 시작합시다','이번 주 진행 상황 공유해 줄래요?','좋아요, 일정은 문제없죠?','고객 피드백도 한번 정리해 봐요','오케이, 그렇게 진행합시다! 수고했어요'];
@@ -2748,7 +2755,7 @@ setTimeout(()=>addCloseX('misPop',()=>$('#misPop').classList.remove('on')),0);
 let bnoteSlot=-1;
 function bossBack(){const r=boss.g.rotation.y;return {x:boss.x-Math.sin(r)*.62,z:boss.z-Math.cos(r)*.62}}
 function startBossNote(){if(!boss||!boss.g.visible){toast('📝 대표님이 사무실에 안 계세요 · 들어오시면 다시 도전!');return}
-  if(boss.noted){toast('📝 대표님 등에 이미 포스트잇이 붙어 있어요 ㅋㅋ');return}if(player.s>=0)standUp();player.a='';const b=bossBack();moveTo={x:b.x,z:b.z,seat:-1,bnote:true,best:Infinity,stuck:0};toast('🤫 살금살금… 대표님 등 뒤로 다가가요 (앞에서 걸리면 혼나요!)')}
+  if(boss.noted){toast('📝 대표님 등에 이미 포스트잇이 붙어 있어요 ㅋㅋ');return}if(player.s>=0)standUp();player.a='';const b=bossBack();moveTo={x:b.x,z:b.z,seat:-1,bnote:true,best:Infinity,stuck:0};toast('🤫 살금살금… 대표님 등 뒤로 다가가요 (들키면 -20,000원!)')}
 function updateBossNoteWalk(){if(!moveTo||!moveTo.bnote)return;if(!boss||!boss.g.visible){moveTo=null;toast('📝 대표님이 나가 버렸어요…');return}const b=bossBack();if(Math.hypot(b.x-moveTo.x,b.z-moveTo.z)>.3){moveTo.x=b.x;moveTo.z=b.z;moveTo.via=undefined;moveTo.best=Infinity;moveTo.stuck=0}marker.position.set(b.x,.015,b.z);marker.material.opacity=.9}
 function stickBoss(){if(!boss||!boss.g.visible||boss.noted)return;if(Math.hypot(player.x-boss.x,player.z-boss.z)>1.3){startBossNote();return}player.r=Math.atan2(boss.x-player.x,boss.z-player.z);player.a='pet';petUntil=performance.now()+900;
   onBossNote({n:me.name});pub('bnote',{n:me.name});if(performance.now()-bossScoldAt>=0)bossScoldAt=performance.now();if(boss.chase&&boss.chase.id===myId)boss.chase=null;
@@ -2758,20 +2765,21 @@ function stickBoss(){if(!boss||!boss.g.visible||boss.noted)return;if(Math.hypot(
 const CL_BLOCK=3*60000,CL_SPEED=1.7,SERVED=new Map();let client=null,clientGone=-1;
 const CL_WAIT=['혹시 커피 한 잔 부탁드려도 될까요? ☕','여기 원두가 그렇게 맛있다면서요~','목이 좀 마르네요… ☕','커피 향이 좋네요, 한 잔 마셔 보고 싶어요'];
 const CL_MEET=['이번 프로젝트 기대가 큽니다','제안서 잘 봤어요, 방향 좋네요','일정은 이대로 가시죠','다음 주에 한 번 더 뵙죠','예산 쪽은 제가 다시 정리해 볼게요'];
+const BOSS_CM=['이번 프로젝트는 저희가 확실히 챙기겠습니다','일정은 최대한 맞춰 드릴게요','샘플 원두도 따로 챙겨 드릴게요','피드백 주시면 바로 반영하겠습니다','다음 분기 계획도 같이 보시죠'],BOSS_CM_COF=['누가 커피 한 잔 내려 드릴래요? ☕','여기 커피 좀 부탁해요~ ☕'];
 const CL_THX=['와, 커피 정말 맛있네요! 감사합니다 😊','역시 호기로스터스! 잘 마실게요 ☕','향이 끝내주네요, 감사해요!'];
 function clientPlan(now){const b=Math.floor(now/CL_BLOCK);if(hsh(b*131+17)/4294967296>.5)return null;const r=k=>hsh(b*k+7)/4294967296;
   return {id:b,start:b*CL_BLOCK+(.1+r(71)*.3)*60000,stay:(60+r(53)*90)*1000,seat:hsh(b*29+5)%4,ci:1+hsh(b*13+1)%7,gd:r(37)<.45?'f':'m'}}
 function clientSeat(){return client&&client.st.s>=0&&client.vid!=null}
 function updateClient(dt,t){if(!OFC.rtSeats||OFC.rtSeats.length<4)return;const now=Date.now(),p=clientPlan(now);
   const sec=p?(now-p.start)/1000:-1,stay=p?p.stay/1000:0,active=p&&sec>=0&&sec<stay,vis=client&&client.g.visible;
-  if(!vis){if(!active||clientGone===p.id||!workHours()||lunchTime())return;
+  if(!vis){if(!active||clientGone===p.id||!workHours()||lunchTime()||!bossInRoom())return;
     if(client){scene.remove(client.g);client.lbl.el.remove()}
     const g=lightShadow(makeChar(p.ci,p.gd)),lbl=makeLabel(false);lbl.n.textContent='👔 클라이언트';lbl.n.style.background='rgba(40,70,120,.65)';lbl.el.classList.add('npc');scene.add(g);
     let si=-1;for(let k=0;k<4;k++){const c=OFC.rtSeats[(p.seat+k)%4];if(!occupied(c)&&player.s!==c){si=c;break}}if(si<0)si=OFC.rtSeats[p.seat];
     client={g,lbl,st:npcState({a:''}),vid:p.id,seat:si,x:BOSS_DOOR[0],z:BOSS_DOOR[1],talkAt:0,route:null,rt:0};
-    if(sec>15){const S=SEATS[si];client.x=S.x;client.z=S.z}else if(entered&&player.z>-D){toast('👔 클라이언트가 오셨어요! 커피를 내려 드리면 +10,000원');sfx('ding')}
+    if(sec>15&&performance.now()-enteredAt<8000){const S=SEATS[si];client.x=S.x;client.z=S.z}else if(entered&&player.z>-D){toast('👔 클라이언트가 오셨어요! 커피를 내려 드리면 +10,000원');sfx('ding')}
     NPC_SEATS.add(si)}
-  const c=client;if(p&&c.vid!==p.id&&!(sec<0))c.leave=true;const leaving=c.leave||!active;
+  const c=client;if(p&&c.vid!==p.id&&!(sec<0))c.leave=true;const leaving=c.leave||!active;c.leaving=leaving;
   const S=SEATS[c.seat],tg=leaving?{x:BOSS_DOOR[0],z:BOSS_DOOR[1]}:{x:S.x,z:S.z};
   if(leaving&&!c.bye){c.bye=1;say(c.lbl,SERVED.has(c.vid)?'오늘 미팅 즐거웠습니다! 커피 잘 마셨어요 👋':'그럼 이만 가보겠습니다 👋',3200);NPC_SEATS.delete(c.seat)}
   let moving=false,face=c.g.rotation.y,seated=false;const dd=Math.hypot(tg.x-c.x,tg.z-c.z);
@@ -2786,6 +2794,9 @@ function updateClient(dt,t){if(!OFC.rtSeats||OFC.rtSeats.length<4)return;const n
   animChar(c.g,c.st,t,moving,dt);c.g.userData.blob.position.y=seated?-S.y+.012:.012;placeLabel(c.lbl,c.g,pn);
   // 배달 버튼
   const near=seated&&!served&&!leaving&&player.drink&&Math.hypot(player.x-c.x,player.z-c.z)<1.7,b=$('#serveBtn'),want=near?'':'none';if(b.style.display!==want)b.style.display=want}
+function clientMeet(){const c=client;if(!c||!c.g.visible||c.leaving)return null;const R=OFC.rtSeats,k=R.indexOf(c.seat);if(k<0)return null;
+  const mine=i=>player.s===i||[...remotes.values()].some(o=>o.s===i);const cand=[R[(k+2)%4],R[k<2?(k===0?3:2):(k===2?1:0)]];
+  for(const si of cand)if(!mine(si)){const S=SEATS[si];return {si,x:S.x,z:S.z,r:S.r}}return null}
 function serveClient(){const c=client;if(!c||!c.g.visible||c.st.s<0||c.leave)return;if(SERVED.has(c.vid)){toast('이미 다른 분이 커피를 드렸어요');return}if(!player.drink)return;
   if(player.drink.left<SIPS){toast('마시던 커피는 드릴 수 없어요 😅 새로 내려 와요');return}
   const d=player.drink.d;player.drink=null;player.d='ha';player.a='';renderSip();onClientServe(String(c.vid),{n:me.name,d},true);pubR('cserve/'+c.vid,{n:me.name,d,t:Date.now()});
@@ -2796,10 +2807,10 @@ $('#serveBtn').addEventListener('click',e=>{serveClient();e.currentTarget.blur()
 // 방해하기
 const BOTHER_R=1.5;let botherT=0,botherLast=0,botherId=null;
 function busyRemote(o){return o&&(o.s>=0||o.a==='work'||o.a==='dance')}
-function botherTarget(){let best=null,bd=BOTHER_R;for(const [id,o] of remotes){if(!busyRemote(o))continue;const d=Math.hypot(o.g.position.x-player.x,o.g.position.z-player.z);if(d<bd){bd=d;best=id}}return best}
+function botherTarget(){let best=null,bd=BOTHER_R;if(boss&&boss.g.visible&&boss.z>-D&&player.z>-D){const d=Math.hypot(boss.x-player.x,boss.z-player.z);if(d<bd){bd=d;best='boss'}}for(const [id,o] of remotes){if(!busyRemote(o))continue;const d=Math.hypot(o.g.position.x-player.x,o.g.position.z-player.z);if(d<bd){bd=d;best=id}}return best}
 function updateBother(dt){if(botherT>0){botherT-=dt;if(botherT<=0&&player.a==='shake'){player.a='';sendPresence(true)}}
-  const id=(entered&&!fixing&&player.s<0&&player.a!=='shake')?botherTarget():null;const b=$('#botherBtn');if(id!==botherId){botherId=id;const o=id&&remotes.get(id);b.style.display=o?'':'none';if(o)b.textContent=`😜 ${o.name} 방해하기`}}
-function doBother(){const id=botherId,o=id&&remotes.get(id);if(!o||!OFFICE)return;const left=12000-(Date.now()-botherLast);if(left>0){toast(`숨 좀 돌리고 다시 방해해요 (${Math.ceil(left/1000)}초)`);return}botherLast=Date.now();
+  const id=(entered&&!fixing&&player.s<0&&player.a!=='shake')?botherTarget():null;const b=$('#botherBtn');if(id!==botherId){botherId=id;const o=id==='boss'?{name:'대표님'}:id&&remotes.get(id);b.style.display=o?'':'none';if(o)b.textContent=`😜 ${o.name} 방해하기`}}
+function doBother(){if(botherId==='boss'&&OFFICE){location.reload();return}const id=botherId,o=id&&remotes.get(id);if(!o||!OFFICE)return;const left=12000-(Date.now()-botherLast);if(left>0){toast(`숨 좀 돌리고 다시 방해해요 (${Math.ceil(left/1000)}초)`);return}botherLast=Date.now();
   moveTo=null;player.r=Math.atan2(o.g.position.x-player.x,o.g.position.z-player.z);player.a='shake';botherT=2.2;sendPresence(true);pub('bother',{to:id,n:me.name});sfx('ding');toast(`😜 ${o.name}님 옆에서 몸을 흔들흔들~`)}
 function onBother(d){if(!OFFICE||!d||d.to!==myId)return;const n=typeof d.n==='string'?d.n.slice(0,20):'누군가';let hit=false;
   if(player.a==='work'){setAction('work');hit=true}if(player.a==='dance'){player.a='';renderDance();hit=true}if(player.s>=0){const S=SEATS[player.s],side=Math.random()<.5?1:-1;standUp();player.x=S.x+Math.cos(S.r)*.6*side;player.z=S.z-Math.sin(S.r)*.6*side;collide(player);moveTo=null;hit=true}
@@ -2899,7 +2910,8 @@ function closedPip(){if(!pipWin)return;pipWin=null;clearInterval(pipBarT);docume
 $('#tPip').addEventListener('click',e=>{e.stopPropagation();openPip()});
 function setEco(on){ECO=on;try{localStorage.setItem('uhwa-eco',on?'1':'0')}catch(e){}$('#tEco').textContent=on?'🔋 절전 켬':'⚡ 고화질';$('#tEco').classList.toggle('on',on);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,on?1.25:2));const ty=on?THREE.PCFShadowMap:THREE.PCFSoftShadowMap;if(renderer.shadowMap.type!==ty){renderer.shadowMap.type=ty;scene.traverse(o=>{if(o.material)(Array.isArray(o.material)?o.material:[o.material]).forEach(m=>m.needsUpdate=true)})}renderer.shadowMap.needsUpdate=true;const n=on?1024:2048;if(sunL.shadow.mapSize.x!==n){sunL.shadow.mapSize.set(n,n);if(sunL.shadow.map){sunL.shadow.map.dispose();sunL.shadow.map=null}}resize()}
-setEco(ECO);$('#tEco').addEventListener('click',e=>{e.stopPropagation();setEco(!ECO);toast(ECO?'🔋 절전 모드 · 30fps(다른 창 볼 땐 20fps) · 화질·그림자↓':'⚡ 고화질 모드 · 최대 60fps · 더 선명하지만 발열이 늘어요')});
+setEco(ECO);$('#tFpv').addEventListener('click',e=>{e.stopPropagation();setFpv(!fpv);e.currentTarget.blur();toast(fpv?'👁 1인칭 시점 · 화면을 드래그하면 둘러볼 수 있어요':'🎥 3인칭 시점으로 돌아왔어요')});
+$('#tEco').addEventListener('click',e=>{e.stopPropagation();setEco(!ECO);toast(ECO?'🔋 절전 모드 · 30fps(다른 창 볼 땐 20fps) · 화질·그림자↓':'⚡ 고화질 모드 · 최대 60fps · 더 선명하지만 발열이 늘어요')});
 $('#pipBack').addEventListener('click',()=>{if(pipWin)pipWin.close()});
 // keep the video-PiP alive when this tab is in the background
 setInterval(()=>{if(vidPip&&document.hidden)loop(performance.now(),loopGen,true)},120);
