@@ -1705,18 +1705,19 @@ const sitBtn=$('#sitBtn');sitBtn.addEventListener('click',()=>{toggleSit();sitBt
 
 /* ---------- input ---------- */
 const keys={};
+const keyOf=e=>/^Key[A-Z]$/.test(e.code||'')?e.code.slice(3).toLowerCase():(e.key||'').toLowerCase(); // 한글 입력 상태에서도 WASD 동작
 addEventListener('keydown',e=>{
   if(document.activeElement===chatIn){if(e.key==='Escape')chatIn.blur();return}
   if(!entered)return;
   if(e.key==='Enter'){e.preventDefault();if(!freeRoom())chatIn.focus();return}
-  const k=e.key.toLowerCase();keys[k]=true;
+  const k=keyOf(e);keys[k]=true;
   if(menuOpen&&menuPop.classList.contains('bn')){const n=+k;if(n>=1&&n<=BEANS.length){placeOrder(beanFor,BEANS[n-1].k);return}if(k==='escape'||k==='backspace'){menuPop.classList.remove('bn');return}return}
   if(menuOpen){const dm={'1':'ha','2':'ia','3':'hl','4':'il','5':'im','6':'mt','7':'fi','8':'cr','9':'et','0':'cu','t':'ty'};if(dm[k]){setAction('sip',dm[k]);return}if(k==='escape'){closeMenu();return}}
   if(actOpen){if(actPop.classList.contains('bk')){const n=+k;if(n>=1&&n<=BOOKS.length){startRead(n-1);return}if(k==='escape'){closeAct();return}return}if(k==='1'&&!OFFICE){if(player.bk>=0){closeAct();setAction('read')}else actPop.classList.add('bk');return}if(k==='2'&&!OFFICE){closeAct();setAction('work');return}if(k==='3'){closeAct();toggleJob();return}if(k==='4'&&player.bk>=0){actPop.classList.add('bk');return}if(k==='escape'){closeAct();return}}
   if(k==='1')setAction('sip');else if(k==='2'){if(OFFICE)eatBung();else eatDessert()}else if(k==='3'){if(actOpen)closeAct();else openAct()}else if(k==='4'||k==='f'||k==='e')toggleSit();else if(k==='5')startToy();else if(k==='0'&&OFFICE){if(player.a==='dance')toggleDance();else openMission()}
   if(k===' '&&!e.repeat)doJump();if(k.startsWith('arrow')||k===' ')e.preventDefault();
 });
-addEventListener('keyup',e=>{keys[e.key.toLowerCase()]=false});
+addEventListener('keyup',e=>{keys[keyOf(e)]=false;keys[(e.key||'').toLowerCase()]=false});
 addEventListener('blur',()=>{for(const k in keys)keys[k]=false});
 let yaw=0,pitch=.38,dist=VW()<VH()?8:6.4,drag=null;
 canvas.addEventListener('pointerdown',e=>{drag={id:e.pointerId,x:e.clientX,y:e.clientY,sx:e.clientX,sy:e.clientY,t:performance.now()};canvas.setPointerCapture(e.pointerId)});
