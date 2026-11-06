@@ -143,7 +143,7 @@ body.touch #log{bottom:280px}
 <canvas id="c"></canvas>
 <div id="labels"></div>
 <div id="hud"><h1>HOGI ROASTERS<span>호기로스터스</span></h1><div id="clock"></div><div id="count">문을 여는 중…</div><div id="cash">💰 0원</div><div id="caff" style="display:none"></div><div id="rank" style="display:none"></div><div id="cctvTag" style="display:none">● REC · CCTV</div><div id="chTag"></div><div id="sales"></div></div>
-<div id="snd"><button class="pill" id="tCh" title="채널 바꾸기" style="display:none">🔁 채널</button><button class="pill" id="tFpv" title="시점 바꾸기: 3인칭 → 1인칭 → CCTV">🎥 3인칭</button><button class="pill" id="tTime" title="시간대·날씨 바꾸기 (나에게만)">🕰 실시간</button><button class="pill" id="tMusic">음악</button><button class="pill" id="tEco" title="절전 모드: 30fps · 화질↓ · 그림자↓ (맥북 발열 줄이기)"></button><button class="pill" id="tPip" title="작은 창으로 띄워 놓고 다른 일 하기">🪟 PiP</button><button class="pill" id="tGB">📖 방명록</button><button class="pill" id="tAmb" title="낮엔 새소리, 밤엔 풀벌레 소리">🌿 바깥 소리</button></div>
+<div id="snd"><button class="pill" id="tCh" title="채널 바꾸기" style="display:none">🔁 채널</button><button class="pill" id="tFpv" title="시점 바꾸기: 3인칭 → 1인칭 → CCTV">🎥 3인칭</button><button class="pill" id="tTime" title="시간대·날씨 바꾸기 (나에게만)">🕰 실시간</button><button class="pill" id="tMusic">음악</button><button class="pill" id="tEco" title="절전 모드: 30fps · 화질↓ · 그림자↓ (맥북 발열 줄이기)"></button><button class="pill" id="tPip" title="작은 창으로 띄워 놓고 다른 일 하기">🪟 작은창으로실행</button><button class="pill" id="tGB">📖 방명록</button><button class="pill" id="tAmb" title="낮엔 새소리, 밤엔 풀벌레 소리">🌿 바깥 소리</button></div>
 <div class="sndPop" id="musPop"><div class="sp-t">오늘의 음악</div><div class="sp-s ofcOnly">🎵 사무실 BGM은 현주님 컴퓨터에서만 고를 수 있어요 · 볼륨은 각자</div><div class="glist"></div><label class="vrow">볼륨<input type="range" id="mVol" min="0" max="100" step="1"><b id="mVolV"></b></label></div>
 <div class="sndPop" id="gbPop"><div class="sp-t">📖 오늘의 방명록 <span id="gbCh" style="font-weight:400;opacity:.6;font-size:11px"></span></div><div class="sp-s">이 채널 모두가 함께 봐요 · 한국 시간 자정에 새 페이지 <span id="gbSt"></span></div><div id="gbList"></div><form id="gbForm" autocomplete="off"><input id="gbIn" maxlength="100" placeholder="한 줄 남기기 (100자)"><button>남기기</button></form></div>
 <div class="sndPop" id="notePop"><div class="sp-t">📝 내 등에 붙은 포스트잇</div><div class="sp-s">누가 몰래 붙였을까요? 하나씩 뗄 수 있어요</div><div class="nl"></div><button class="all">모두 떼기</button></div>
@@ -2283,7 +2283,7 @@ let fpv=false;
 let cctv=false;const VIEW_NAME=['🎥 3인칭','👁 1인칭','📹 CCTV'];
 function viewMode(){return fpv?1:cctv?2:0}
 function setView(m){if(!entered)return;const wasF=!!fpv;fpv=m===1?{s:player.s}:false;cctv=m===2;if(m===1){yaw=(player.s>=0?SEATS[player.s].r:player.r)+Math.PI;pitch=.45}else if(wasF){pitch=.38}player.g.visible=true;player.lbl.el.style.display=m===1?'none':'';const b=$('#tFpv');if(b){b.textContent=VIEW_NAME[m];b.classList.toggle('on',m>0)}const tg=$('#cctvTag');if(tg)tg.style.display=m===2?'':'none'}
-function cctvPose(){return OFFICE?{p:[-W+.3,H-.3,D-.3],t:[1.5,.1,-2]}:{p:[-W+.3,H-.3,D-.3],t:[2,.1,-2]}}
+function cctvPose(){return OFFICE?{p:[-W+.3,2.5,D-.3],t:[.5,-.5,-1]}:{p:[-W+.3,H-.3,D-.3],t:[2,.1,-2]}}
 function updateCamera(dt){
   {const wf=entered&&fpv?(VW()<VH()?95:80):entered&&cctv?(VW()<VH()?100:74):(VW()<VH()?64:50);if(camera.fov!==wf){camera.fov=wf;camera.updateProjectionMatrix()}}
   if(entered&&cctv){const c=cctvPose();camX=c.p[0];camY=c.p[1];camZ=c.p[2];camera.position.set(camX,camY,camZ);camera.lookAt(c.t[0],c.t[1],c.t[2]);return}
