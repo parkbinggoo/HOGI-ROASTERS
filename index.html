@@ -1540,7 +1540,7 @@ const menuPop=$('#menuPop');let menuOpen=false;
 const won=n=>n.toLocaleString('ko-KR')+'원';
 let cash=0;try{cash=Math.max(0,parseInt(localStorage.getItem('uhwa-cash')||'0',10)||0)}catch(e){}
 let cashKey='uhwa-cash';
-function saveCash(){try{localStorage.setItem(cashKey,String(cash))}catch(e){}}
+function saveCash(){try{localStorage.setItem(cashKey,String(cash))}catch(e){}if(typeof OFFICE!=='undefined'&&OFFICE&&typeof pubCash==='function')pubCash()}
 function renderCash(){$('#cash').textContent=(cash<0?'😭 마이너스 통장 ':'💰 ')+won(cash);$('#cash').classList.toggle('debt',cash<0);$('#mCash').textContent='· 보유 '+won(cash);
   menuPop.querySelectorAll('button[data-d]').forEach(b=>{const D=b.dataset.d==='cu'?CHURU:b.dataset.d==='ty'?TOY:(DRINK[b.dataset.d]||DESSERT[b.dataset.d]);b.querySelector('small').textContent=cash>=D.price?won(D.price):won(D.price)+' · 부족';b.disabled=cash<D.price})}
 let toastT=0;function toast(msg){const t=$('#toast');t.textContent=msg;t.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('on'),2600)}
@@ -2553,18 +2553,21 @@ function updateOfficeSky(dt){if(!OFC.sun)return;const {h,doy}=currentHour(),{ris
 const EARN=new Map();let myEid='';try{myEid=localStorage.getItem('uhwa-eid')||'';if(!/^[a-z0-9]{8,16}$/.test(myEid)){myEid=Math.random().toString(36).slice(2,12).padEnd(10,'x');localStorage.setItem('uhwa-eid',myEid)}}catch(e){myEid=Math.random().toString(36).slice(2,12).padEnd(10,'x')}
 function kstDateOff(days){const d=new Date(Date.now()+TZ_OFF*3600e3-days*864e5);return d.getUTCFullYear()+'-'+(d.getUTCMonth()+1)+'-'+d.getUTCDate()}
 function winDate(){return kstNow().h>=18?kstDate():kstDateOff(1)}
-function addEarn(pay){if(!workHours())return;const dd=kstDate(),eid=player.pk?'pk'+player.pk+'00':myEid,lk='uhwa-earn-'+dd+'-'+eid;let a=0;const M3=EARN.get(dd),known=M3&&M3.get(eid)?M3.get(eid).a:0;try{a=parseInt(localStorage.getItem(lk)||'0',10)||0}catch(e){}a=Math.max(a,known)+pay;try{localStorage.setItem(lk,String(a))}catch(e){}
-  if(!EARN.has(dd))EARN.set(dd,new Map());EARN.get(dd).set(eid,{n:me.name,a});pubR('earn/'+dd+'/'+eid,{n:me.name,a})}
+// ranking = each avatar's current wallet (last known balance today), not the sum earned
+function addEarn(){pubCash()}
+let pubCashT=0,pubCashLast='';
+function pubCash(force){if(!OFFICE||!entered||!player.pk)return;const dd=kstDate(),eid='pk'+player.pk+'00',now=Date.now();if(!EARN.has(dd))EARN.set(dd,new Map());EARN.get(dd).set(eid,{n:me.name,a:cash,t:now});
+  const sig=dd+eid+me.name+cash;if(!force&&sig===pubCashLast)return;if(!force&&now-pubCashT<1500){clearTimeout(pubCash.tm);pubCash.tm=setTimeout(()=>pubCash(),1600);return}pubCashT=now;pubCashLast=sig;pubR('earn/'+dd+'/'+eid,{n:me.name,a:cash,t:now})}
 function onEarn(rest,d,topic){const [dd,id]=rest.split('/');if(!id||!/^[a-z0-9]{4,16}$/.test(id)||!/^\d{4}-\d{1,2}-\d{1,2}$/.test(dd))return;
   if(dd!==kstDate()&&dd!==kstDateOff(1)){if(d&&ch&&live)try{ch.publish(topic,'',{qos:1,retain:true})}catch(e){}return}
-  if(!d||typeof d!=='object')return;const a=Math.max(0,Math.min(1e8,Number(d.a)||0)),n=typeof d.n==='string'?d.n.slice(0,24):'';if(!n)return;
-  if(!EARN.has(dd))EARN.set(dd,new Map());const p=EARN.get(dd).get(id);if(!p||a>=p.a){EARN.get(dd).set(id,{n,a});drawBoard()}}
+  if(!d||typeof d!=='object')return;const a=Math.max(-1e8,Math.min(1e8,Number(d.a)||0)),tt=Number(d.t)||0,n=typeof d.n==='string'?d.n.slice(0,24):'';if(!n)return;
+  if(!EARN.has(dd))EARN.set(dd,new Map());const p=EARN.get(dd).get(id);if(!p||tt>(p.t||0)){EARN.get(dd).set(id,{n,a,t:tt});drawBoard()}}
 let boardKey='';
-function drawBoard(){if(!OFC.boardTex)return;const dd=winDate(),L=[...(EARN.get(dd)||new Map()).values()].sort((a,b)=>b.a-a.a);const best=L.length&&L[0].a>0?L[0]:null,worst=L.length>1?L[L.length-1]:null;
+function drawBoard(){if(!OFC.boardTex)return;const dd=winDate(),L=[...(EARN.get(dd)||new Map()).values()].sort((a,b)=>b.a-a.a);const best=L.length?L[0]:null,worst=L.length>1?L[L.length-1]:null;
   const key=dd+'|'+(best?best.n+best.a:'')+'|'+(worst?worst.n+worst.a:'');if(key===boardKey)return;boardKey=key;
   const g=OFC.boardTex.image.getContext('2d'),w=512,h=336,[y,mo,da]=dd.split('-');
   g.fillStyle='#1f2a24';g.fillRect(0,0,w,h);g.strokeStyle='#c9a45c';g.lineWidth=6;g.strokeRect(12,12,w-24,h-24);g.lineWidth=1.5;g.strokeRect(22,22,w-44,h-44);
-  g.textAlign='center';g.fillStyle='rgba(255,255,255,.6)';g.font='17px "Noto Sans KR",sans-serif';g.fillText(`${mo}월 ${da}일 · 09~18시 근무 · 그날 접속한 모든 사원 기준`,w/2,52);
+  g.textAlign='center';g.fillStyle='rgba(255,255,255,.6)';g.font='17px "Noto Sans KR",sans-serif';g.fillText(`${mo}월 ${da}일 · 그날 접속한 모든 사원의 현재(마지막) 지갑 기준`,w/2,52);
   const row=(y0,title,col,v,empty)=>{g.fillStyle=col;g.font='bold 26px "Noto Sans KR",sans-serif';g.fillText(title,w/2,y0);
     if(v){g.fillStyle='#ffffff';let fs=44;g.font=`bold ${fs}px "Noto Sans KR",sans-serif`;const t=`${v.n}  ${won(v.a)}`;while(g.measureText(t).width>w-70&&fs>24){fs-=4;g.font=`bold ${fs}px "Noto Sans KR",sans-serif`}g.fillText(t,w/2,y0+50)}
     else{g.fillStyle='rgba(255,255,255,.7)';g.font='22px "Noto Sans KR",sans-serif';g.fillText(empty,w/2,y0+44)}};
@@ -2573,12 +2576,11 @@ function drawBoard(){if(!OFC.boardTex)return;const dd=winDate(),L=[...(EARN.get(
   row(214,'🐢 오늘의 꼴등사원','#9fc3e8',worst,'아직 없어요 (2명 이상 필요)');
   g.fillStyle='rgba(255,255,255,.45)';g.font='15px "Noto Sans KR",sans-serif';g.fillText('매일 18시 퇴근 때 그날 기록으로 바뀌어요',w/2,306);OFC.boardTex.needsUpdate=true}
 // attendance: anyone who enters the office today is on the board (0원부터)
-function markAttend(){if(!OFFICE||!entered||!player.pk||typeof live==='undefined'||!live)return;const dd=kstDate(),eid='pk'+player.pk+'00';const M3=EARN.get(dd);if(M3&&M3.has(eid)&&M3.get(eid).n===me.name&&markAttend.d===dd)return;markAttend.d=dd;
-  let a=0;try{a=parseInt(localStorage.getItem('uhwa-earn-'+dd+'-'+eid)||'0',10)||0}catch(e){}if(M3&&M3.get(eid))a=Math.max(a,M3.get(eid).a);if(!EARN.has(dd))EARN.set(dd,new Map());EARN.get(dd).set(eid,{n:me.name,a});pubR('earn/'+dd+'/'+eid,{n:me.name,a});drawBoard()}
+function markAttend(){if(!OFFICE||!entered||!player.pk||typeof live==='undefined'||!live)return;const dd=kstDate();if(markAttend.d===dd)return;markAttend.d=dd;pubCash(true);drawBoard()}
 setInterval(markAttend,8000);
 // 현재 우수사원 / 꼴등사원 under the wallet (today's records of everyone who came in), refreshed every 5 minutes
 function renderRank(){const el=$('#rank');if(!el)return;if(!OFFICE||!entered){el.style.display='none';return}const L=[...(EARN.get(kstDate())||new Map()).values()].sort((a,b)=>b.a-a.a);
-  const best=L.length&&L[0].a>0?L[0]:null,worst=L.length>1?L[L.length-1]:null,t=new Date(Date.now()+TZ_OFF*3600e3);
+  const best=L.length?L[0]:null,worst=L.length>1?L[L.length-1]:null,t=new Date(Date.now()+TZ_OFF*3600e3);
   el.innerHTML=`🏆 현재 우수사원 · <b>${best?esc(best.n)+' '+won(best.a):'아직 없어요'}</b><br>🐢 현재 꼴등사원 · <i>${worst?esc(worst.n)+' '+won(worst.a):'아직 없어요'}</i> <small>${String(t.getUTCHours()).padStart(2,'0')}:${String(t.getUTCMinutes()).padStart(2,'0')} 기준</small>`;el.style.display=''}
 function esc(x){return String(x).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
 setInterval(renderRank,300000);
