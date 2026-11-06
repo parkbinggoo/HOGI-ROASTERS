@@ -42,7 +42,7 @@ body.kb #bar .act,body.kb #joy,body.kb #log{display:none!important}body.kb #toas
 #hud h1 span{font-weight:400;opacity:.7;margin-left:6px;font-size:15px}
 #clock,#count{margin-top:3px;font-size:13px;opacity:.9;text-shadow:0 1px 6px rgba(0,0,0,.7)}
 #clock{font-family:'Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic',sans-serif}
-#cash{margin-top:6px;display:inline-block;font-size:13px;padding:3px 10px;border-radius:12px;background:rgba(43,33,29,.6);text-shadow:none}#cash.debt{background:rgba(120,20,30,.75);color:#ffd0d0}#caff{display:inline-block;margin-top:6px;padding:4px 10px;border-radius:12px;background:rgba(120,72,40,.75);color:#fff;font-size:12.5px;animation:caffP 1.6s ease-in-out infinite}#caff.gold{background:linear-gradient(90deg,#b8860b,#f5c542);color:#2b1d05;box-shadow:0 0 12px rgba(255,200,60,.7)}@keyframes caffP{50%{background:rgba(160,96,50,.85)}}
+#cash{margin-top:6px;display:inline-block;font-size:13px;padding:3px 10px;border-radius:12px;background:rgba(43,33,29,.6);text-shadow:none}#cash.debt{background:rgba(120,20,30,.75);color:#ffd0d0}#caff{display:inline-block;margin-top:6px;padding:4px 10px;border-radius:12px;background:rgba(120,72,40,.75);color:#fff;font-size:12.5px;animation:caffP 1.6s ease-in-out infinite}#rank{display:block;width:max-content;margin-top:6px;padding:4px 10px;border-radius:12px;background:rgba(43,33,29,.6);font-size:12.5px;line-height:1.55;text-shadow:none}#rank b{font-weight:700;color:#ffd98a}#rank i{font-style:normal;color:#9fc3e8;font-weight:700}#rank small{opacity:.55;font-size:10.5px}#caff.gold{background:linear-gradient(90deg,#b8860b,#f5c542);color:#2b1d05;box-shadow:0 0 12px rgba(255,200,60,.7)}@keyframes caffP{50%{background:rgba(160,96,50,.85)}}
 #toast{position:fixed;left:50%;top:64px;transform:translateX(-50%) translateY(-6px);padding:8px 16px;border-radius:14px;background:rgba(43,33,29,.88);font-size:13.5px;opacity:0;transition:all .3s;pointer-events:none;z-index:6;white-space:nowrap}
 #toast.on{opacity:1;transform:translateX(-50%)}
 #banner{position:fixed;left:50%;top:30%;transform:translate(-50%,-50%) scale(.6);text-align:center;opacity:0;pointer-events:none;z-index:7;transition:opacity .4s}
@@ -141,7 +141,7 @@ body.touch #log{bottom:280px}
 <body>
 <canvas id="c"></canvas>
 <div id="labels"></div>
-<div id="hud"><h1>HOGI ROASTERS<span>호기로스터스</span></h1><div id="clock"></div><div id="count">문을 여는 중…</div><div id="cash">💰 0원</div><div id="caff" style="display:none"></div><div id="chTag"></div><div id="sales"></div></div>
+<div id="hud"><h1>HOGI ROASTERS<span>호기로스터스</span></h1><div id="clock"></div><div id="count">문을 여는 중…</div><div id="cash">💰 0원</div><div id="caff" style="display:none"></div><div id="rank" style="display:none"></div><div id="chTag"></div><div id="sales"></div></div>
 <div id="snd"><button class="pill" id="tCh" title="채널 바꾸기" style="display:none">🔁 채널</button><button class="pill" id="tTime" title="시간대·날씨 바꾸기 (나에게만)">🕰 실시간</button><button class="pill" id="tMusic">음악</button><button class="pill" id="tEco" title="절전 모드: 30fps · 화질↓ · 그림자↓ (맥북 발열 줄이기)"></button><button class="pill" id="tPip" title="작은 창으로 띄워 놓고 다른 일 하기">🪟 PiP</button><button class="pill" id="tGB">📖 방명록</button><button class="pill" id="tAmb" title="낮엔 새소리, 밤엔 풀벌레 소리">🌿 바깥 소리</button></div>
 <div class="sndPop" id="musPop"><div class="sp-t">오늘의 음악</div><div class="sp-s ofcOnly">🎵 사무실 BGM은 현주님 컴퓨터에서만 고를 수 있어요 · 볼륨은 각자</div><div class="glist"></div><label class="vrow">볼륨<input type="range" id="mVol" min="0" max="100" step="1"><b id="mVolV"></b></label></div>
 <div class="sndPop" id="gbPop"><div class="sp-t">📖 오늘의 방명록 <span id="gbCh" style="font-weight:400;opacity:.6;font-size:11px"></span></div><div class="sp-s">이 채널 모두가 함께 봐요 · 한국 시간 자정에 새 페이지 <span id="gbSt"></span></div><div id="gbList"></div><form id="gbForm" autocomplete="off"><input id="gbIn" maxlength="100" placeholder="한 줄 남기기 (100자)"><button>남기기</button></form></div>
@@ -298,7 +298,7 @@ renderer.outputEncoding=THREE.sRGBEncoding;
 renderer.toneMapping=THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure=1.05;
 renderer.shadowMap.enabled=true;
-renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+renderer.shadowMap.type=ECO?THREE.PCFShadowMap:THREE.PCFSoftShadowMap;
 const scene=new THREE.Scene();
 scene.background=new THREE.Color('#1c1a22');
 const camera=new THREE.PerspectiveCamera(50,1,0.1,80);
@@ -2287,16 +2287,17 @@ let last=performance.now(),lastDraw=0;
 function loop(now,gen,once){
   if(gen!==undefined&&gen!==loopGen)return;if(!once)(pipWin||window).requestAnimationFrame(t=>loop(t,loopGen));now=performance.now();
   // 절전: 30fps cap; tab hidden (and no PiP) -> about 1 frame a second
-  if(!once){const gap=document.hidden&&!pipWin&&!vidPip?950:ECO?31:0;if(now-lastDraw<gap)return;lastDraw=now}
+  if(!once){const gap=document.hidden&&!pipWin&&!vidPip?950:ECO?(!pipWin&&!document.hasFocus()?48:31):15;if(now-lastDraw<gap)return;lastDraw=now}
   const dt=Math.min(document.hidden&&!pipWin&&!vidPip?1:.05,(now-last)/1000);last=now;const t=now/1000;
   applyEnv(dt);updateWeather(dt,t);updatePlayer(dt);updateRemotes(dt,t);updateCamera(dt);
-  if(++frame%8===0){drawWindow(cur,t);drawSky(cur)}
+  if(++frame%(ECO?24:8)===0){if(!OFFICE)drawWindow(cur,t);drawSky(cur)}
   if(player.a==='pet'&&now>petUntil)player.a='';if(player.a==='yay'&&now>yayUntil)player.a='';updatePetals(dt,t);updateOrder(dt);updateSip(dt);updateBite(dt);renderDessert();updateWork(dt);updateJob(dt);updateToy();if(OFFICE)updateOffice(dt);else{updateBarista(dt,t);updateNPC(dt,t);npcChatter(dt);if(roastArms)roastArms.rotation.y+=dt*1.1;placeLabel(shopLbl,shopProxy,performance.now())}
   if(!OFFICE)updateCats(dt,t);
   if(player.a==='pet'){const c=CATS[player.pc];if(c&&!petWarned&&now-petStart>1100&&c.pose!=='happy'&&c.pose!=='bellyp'){petWarned=true;player.a='';player.pc=-1;toast(`${c.def.name}는 지금 쓰다듬기 싫대요`)}}
   if(player.a!=='pet')player.pc=-1;
   if(player.a==='feed'&&now>feedUntil)player.a='';
   if(player.a==='work'&&Math.random()<dt*9)sfx('key');if(!moveTo)marker.material.opacity=Math.max(0,marker.material.opacity-dt*2.5);marker.scale.setScalar(1+Math.sin(t*6)*.08);
+  renderer.shadowMap.autoUpdate=!ECO;if(ECO&&frame%2===0)renderer.shadowMap.needsUpdate=true;
   renderer.render(scene,camera);
   if(entered)placeLabel(player.lbl,player.g,now);
   for(const o of remotes.values())placeLabel(o.lbl,o.g,now);
@@ -2575,6 +2576,12 @@ function drawBoard(){if(!OFC.boardTex)return;const dd=winDate(),L=[...(EARN.get(
 function markAttend(){if(!OFFICE||!entered||!player.pk||typeof live==='undefined'||!live)return;const dd=kstDate(),eid='pk'+player.pk+'00';const M3=EARN.get(dd);if(M3&&M3.has(eid)&&M3.get(eid).n===me.name&&markAttend.d===dd)return;markAttend.d=dd;
   let a=0;try{a=parseInt(localStorage.getItem('uhwa-earn-'+dd+'-'+eid)||'0',10)||0}catch(e){}if(M3&&M3.get(eid))a=Math.max(a,M3.get(eid).a);if(!EARN.has(dd))EARN.set(dd,new Map());EARN.get(dd).set(eid,{n:me.name,a});pubR('earn/'+dd+'/'+eid,{n:me.name,a});drawBoard()}
 setInterval(markAttend,8000);
+// 현재 우수사원 / 꼴등사원 under the wallet (today's records of everyone who came in), refreshed every 5 minutes
+function renderRank(){const el=$('#rank');if(!el)return;if(!OFFICE||!entered){el.style.display='none';return}const L=[...(EARN.get(kstDate())||new Map()).values()].sort((a,b)=>b.a-a.a);
+  const best=L.length&&L[0].a>0?L[0]:null,worst=L.length>1?L[L.length-1]:null,t=new Date(Date.now()+TZ_OFF*3600e3);
+  el.innerHTML=`🏆 현재 우수사원 · <b>${best?esc(best.n)+' '+won(best.a):'아직 없어요'}</b><br>🐢 현재 꼴등사원 · <i>${worst?esc(worst.n)+' '+won(worst.a):'아직 없어요'}</i> <small>${String(t.getUTCHours()).padStart(2,'0')}:${String(t.getUTCMinutes()).padStart(2,'0')} 기준</small>`;el.style.display=''}
+function esc(x){return String(x).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+setInterval(renderRank,300000);
 setInterval(()=>{if(OFFICE)drawBoard()},15000);
 function enterOffice(){OFFICE=true;document.body.classList.add('office');try{renderWork()}catch(e){}
   // hide every cafe interior object (keep the shell, street and people), drop cafe colliders
@@ -2772,7 +2779,7 @@ function onScold(d){if(!OFFICE||!boss||!d||typeof d.m!=='string')return;say(boss
 function openOfficeCoffee(){if(player.drink){toast('들고 있는 커피부터 마셔요 ☕');return}if(OFC.brewD){toast('커피 내리는 중이에요');return}closeAct();$('#ofcPop').classList.add('on')}
 function officeBrew(d){$('#ofcPop').classList.remove('on');if(player.s>=0)standUp();OFC.brewD=d;const sp=OFC.coffeeSpot;moveTo={x:sp.x,z:sp.z,seat:-1,coffee:true,best:Infinity,stuck:0};marker.position.set(sp.x,.015,sp.z);marker.material.opacity=.9;toast(`☕ ${DRINK[d].name} 내리러 가요`);renderSip()}
 function officeArrive(){player.r=OFC.coffeeR!=null?OFC.coffeeR:Math.PI;player.a='brew';OFC.brewUntil=performance.now()+3200;sfx('grind')}
-function updateOffice(dt){if(!OFFICE)return;updateBossNoteWalk();updateDance(dt);updateDesks(dt);updateStall(dt);updateMeeting(dt);{const dw=player.a==='work'&&atDesk();if(document.body.classList.contains('deskwork')!==dw)document.body.classList.toggle('deskwork',dw)}updateCaff();checkLunch();updateOfficeSky(dt);if(OFC.inWall){const cw=OFC.inWall.material,blk2=(camera.position.z+2.6)*(player.z+2.6)<0&&Math.max(camera.position.x,player.x)>-1.2,o=blk2?.18:1;if(Math.abs(cw.opacity-o)>.01){cw.opacity+=(o-cw.opacity)*Math.min(1,dt*8);cw.depthWrite=cw.opacity>.9}}if(OFC.eWall){const ew=OFC.eWall.material,o=camera.position.x>4.9?.12:1;if(Math.abs(ew.opacity-o)>.01){ew.opacity+=(o-ew.opacity)*Math.min(1,dt*8);ew.depthWrite=ew.opacity>.9}}updateBoss(dt,performance.now()/1000);if(OFFICE){const rk=atRepair()?1:atRoaster()?2:0;if(doBtn._rk!==rk){doBtn._rk=rk;renderWork()}const dm=player.a!=='work'&&!atDesk()&&!atRoaster();if(doBtn.classList.contains('dim')!==dm)doBtn.classList.toggle('dim',dm)}placeLabel(OFC.coffeeLbl,OFC.coffeeProxy,performance.now());if(OFC.drumSpin){let on=player.a==='work'&&atRoaster();if(!on&&OFC.roastSpot)for(const o of remotes.values())if(o.a==='work'&&o.s<0&&Math.hypot(o.tx-OFC.roastSpot.x,o.tz-OFC.roastSpot.z)<1.3){on=true;break}
+function updateOffice(dt){if(!OFFICE)return;if(!renderRank.done&&entered&&performance.now()-enteredAt>6000){renderRank.done=1;renderRank()}updateBossNoteWalk();updateDance(dt);updateDesks(dt);updateStall(dt);updateMeeting(dt);{const dw=player.a==='work'&&atDesk();if(document.body.classList.contains('deskwork')!==dw)document.body.classList.toggle('deskwork',dw)}updateCaff();checkLunch();updateOfficeSky(dt);if(OFC.inWall){const cw=OFC.inWall.material,blk2=(camera.position.z+2.6)*(player.z+2.6)<0&&Math.max(camera.position.x,player.x)>-1.2,o=blk2?.18:1;if(Math.abs(cw.opacity-o)>.01){cw.opacity+=(o-cw.opacity)*Math.min(1,dt*8);cw.depthWrite=cw.opacity>.9}}if(OFC.eWall){const ew=OFC.eWall.material,o=camera.position.x>4.9?.12:1;if(Math.abs(ew.opacity-o)>.01){ew.opacity+=(o-ew.opacity)*Math.min(1,dt*8);ew.depthWrite=ew.opacity>.9}}updateBoss(dt,performance.now()/1000);if(OFFICE){const rk=atRepair()?1:atRoaster()?2:0;if(doBtn._rk!==rk){doBtn._rk=rk;renderWork()}const dm=player.a!=='work'&&!atDesk()&&!atRoaster();if(doBtn.classList.contains('dim')!==dm)doBtn.classList.toggle('dim',dm)}placeLabel(OFC.coffeeLbl,OFC.coffeeProxy,performance.now());if(OFC.drumSpin){let on=player.a==='work'&&atRoaster();if(!on&&OFC.roastSpot)for(const o of remotes.values())if(o.a==='work'&&o.s<0&&Math.hypot(o.tx-OFC.roastSpot.x,o.tz-OFC.roastSpot.z)<1.3){on=true;break}
     OFC.spin+=((on?1:0)-OFC.spin)*Math.min(1,dt*1.5);OFC.drumSpin.rotation.x+=dt*5*OFC.spin;if(roastArms)roastArms.rotation.y+=dt*2.2*OFC.spin;OFC.trayBeans.visible=OFC.spin>.3}if(OFC.roastLbl)placeLabel(OFC.roastLbl,OFC.roastProxy,performance.now());
   if(OFC.brewD&&player.a==='brew'&&performance.now()>OFC.brewUntil){const d=OFC.brewD;OFC.brewD='';player.a='';player.drink={d,left:SIPS,bean:'santa'};player.d=d;renderSip();toast(`${DRINK[d].name} 완성! 1을 누를 때마다 한 모금`);sfx('clink')}
   if(OFC.brewD&&!moveTo&&player.a!=='brew')OFC.brewD='';
@@ -2810,8 +2817,8 @@ async function openPip(){
         {const st=d.createElement('style');st.textContent='#log{left:10px!important;bottom:92px!important;width:calc(100% - 20px)!important}#log div{font-size:29px!important}#log div:nth-last-child(n+4){display:none}#myNotes{left:auto!important;right:10px!important;bottom:92px!important}#menuPop,#actPop,#ofcPop{bottom:92px!important;max-height:calc(100vh - 110px)!important;overflow-y:auto}.pbb{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font:12.5px "Noto Sans KR","Apple SD Gothic Neo",sans-serif;padding:7px 6px;border-radius:12px;border:1px solid rgba(246,238,227,.3);background:rgba(43,33,29,.82);color:#f6eee3;cursor:pointer}.pbb.on{background:rgba(200,64,46,.9)}.pbb:disabled{opacity:.4}';d.head.appendChild(st);
           const pb=d.createElement('div');pb.style.cssText='position:fixed;left:8px;right:8px;bottom:50px;display:flex;gap:6px;z-index:5';d.body.appendChild(pb);
           const map=[['#sipBtn'],['#bungBtn'],['#doBtn'],['#danceBtn'],['#sitBtn']].map(([q])=>{const src=document.querySelector(q),b=d.createElement('button');b.className='pbb';b.addEventListener('click',e=>{e.stopPropagation();src.click();b.blur()});pb.appendChild(b);return [src,b]});
-          const cw=d.createElement('div');cw.style.cssText="position:fixed;left:8px;top:8px;z-index:5;padding:4px 11px;border-radius:12px;background:rgba(43,33,29,.75);color:#f6eee3;font:bold 13px 'Noto Sans KR','Apple SD Gothic Neo',sans-serif;pointer-events:none";d.body.appendChild(cw);
-          const sync=()=>{const ct=$('#cash').textContent,neg=cash<0;if(cw.textContent!==ct)cw.textContent=ct;cw.style.background=neg?'rgba(120,20,30,.85)':'rgba(43,33,29,.75)';for(const [src,b] of map){const hid=getComputedStyle(src).display==='none';b.style.display=hid?'none':'';const t=src.textContent.replace(/^\d\s*/,'').trim();if(b.textContent!==t)b.textContent=t;b.disabled=!!src.disabled;b.classList.toggle('on',src.classList.contains('on'))}};sync();clearInterval(pipBarT);pipBarT=setInterval(sync,300)}
+          const cw=d.createElement('div');cw.style.cssText="position:fixed;left:8px;top:8px;z-index:5;padding:4px 11px;border-radius:12px;background:rgba(43,33,29,.75);color:#f6eee3;font:bold 13px 'Noto Sans KR','Apple SD Gothic Neo',sans-serif;pointer-events:none";d.body.appendChild(cw);const rw=d.createElement('div');rw.style.cssText="position:fixed;left:8px;top:40px;z-index:5;padding:3px 10px;border-radius:12px;background:rgba(43,33,29,.72);color:#f6eee3;font:11.5px/1.5 'Noto Sans KR','Apple SD Gothic Neo',sans-serif;pointer-events:none";d.body.appendChild(rw);
+          const sync=()=>{const ct=$('#cash').textContent,neg=cash<0;if(cw.textContent!==ct)cw.textContent=ct;cw.style.background=neg?'rgba(120,20,30,.85)':'rgba(43,33,29,.75)';{const rk=$('#rank'),on=rk&&rk.style.display!=='none';rw.style.display=on?'':'none';if(on&&rw.innerHTML!==rk.innerHTML){rw.innerHTML=rk.innerHTML;rw.querySelectorAll('b').forEach(e=>e.style.color='#ffd98a');rw.querySelectorAll('i').forEach(e=>{e.style.color='#9fc3e8';e.style.fontStyle='normal'});rw.querySelectorAll('small').forEach(e=>e.style.opacity='.55')}}for(const [src,b] of map){const hid=getComputedStyle(src).display==='none';b.style.display=hid?'none':'';const t=src.textContent.replace(/^\d\s*/,'').trim();if(b.textContent!==t)b.textContent=t;b.disabled=!!src.disabled;b.classList.toggle('on',src.classList.contains('on'))}};sync();clearInterval(pipBarT);pipBarT=setInterval(sync,300)}
         i.addEventListener('keydown',e=>{e.stopPropagation();if(e.key==='Escape'){i.blur();return}if(e.key!=='Enter'||e.isComposing||e.keyCode===229)return;e.preventDefault();const m=i.value.trim();if(!m)return;chatIn.value=m;sendChat();i.value=''});}
       for(const ev of ['keydown','keyup'])w.addEventListener(ev,e=>{if(e.target&&e.target.tagName==='INPUT')return;window.dispatchEvent(new KeyboardEvent(ev,{key:e.key,code:e.code,keyCode:e.keyCode}))});
       w.addEventListener('resize',resize);w.addEventListener('pagehide',closedPip);
@@ -2823,8 +2830,8 @@ async function openPip(){
 function closedPip(){if(!pipWin)return;pipWin=null;clearInterval(pipBarT);document.body.append(...PIP_MOVE);document.body.prepend(labelsEl);document.body.prepend(canvas);$('#pipNote').classList.remove('on');$('#tPip').classList.remove('on');resize();loopGen++;requestAnimationFrame(t=>loop(t,loopGen))}
 $('#tPip').addEventListener('click',e=>{e.stopPropagation();openPip()});
 function setEco(on){ECO=on;try{localStorage.setItem('uhwa-eco',on?'1':'0')}catch(e){}$('#tEco').textContent=on?'🔋 절전 켬':'⚡ 고화질';$('#tEco').classList.toggle('on',on);
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,on?1.25:2));const n=on?1024:2048;if(sunL.shadow.mapSize.x!==n){sunL.shadow.mapSize.set(n,n);if(sunL.shadow.map){sunL.shadow.map.dispose();sunL.shadow.map=null}}resize()}
-setEco(ECO);$('#tEco').addEventListener('click',e=>{e.stopPropagation();setEco(!ECO);toast(ECO?'🔋 절전 모드 · 30fps · 화질과 그림자를 낮춰 발열을 줄여요':'⚡ 고화질 모드 · 60fps · 더 선명하지만 발열이 늘어요')});
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,on?1.25:2));const ty=on?THREE.PCFShadowMap:THREE.PCFSoftShadowMap;if(renderer.shadowMap.type!==ty){renderer.shadowMap.type=ty;scene.traverse(o=>{if(o.material)(Array.isArray(o.material)?o.material:[o.material]).forEach(m=>m.needsUpdate=true)})}renderer.shadowMap.needsUpdate=true;const n=on?1024:2048;if(sunL.shadow.mapSize.x!==n){sunL.shadow.mapSize.set(n,n);if(sunL.shadow.map){sunL.shadow.map.dispose();sunL.shadow.map=null}}resize()}
+setEco(ECO);$('#tEco').addEventListener('click',e=>{e.stopPropagation();setEco(!ECO);toast(ECO?'🔋 절전 모드 · 30fps(다른 창 볼 땐 20fps) · 화질·그림자↓':'⚡ 고화질 모드 · 최대 60fps · 더 선명하지만 발열이 늘어요')});
 $('#pipBack').addEventListener('click',()=>{if(pipWin)pipWin.close()});
 // keep the video-PiP alive when this tab is in the background
 setInterval(()=>{if(vidPip&&document.hidden)loop(performance.now(),loopGen,true)},120);
