@@ -489,7 +489,7 @@ function markTaken(id,until,broadcast=false){
 }
 function refreshRespawns(){const now=Date.now();let needs=false;
  for(const [id,end] of sharedTaken)if(end<=now){sharedTaken.delete(id);needs=true}
- if(needs){for(const c of [...chunks.values()]){disposeChunk(c)}chunkKey='';updateChunks(P.x,P.z,true,0)}
+ if(needs){for(const c of [...chunks.values()]){disposeChunk(c)}chunkKey='';chunkQueue=[];updateChunks(P.x,P.z,false,0)}
 }
 const JACKETS=[0x2f56b0,0xc0392b,0x2e7d4f,0xe08a1e,0x6a4a9a,0x4a4e55];
 const ALT_K=2.5;                      // world unit → displayed metres
@@ -1857,15 +1857,17 @@ function buildChunk(cx,cz){
     mesh.rotation.y=ang;
     const it={kind:'herb',type,id,hits:0,need:sp.need,mesh,tree:t};mesh.userData.item=it;grp.add(mesh);c.items.push(it);
   }
-  addAlpineVegetation(c,r,ox,oz,grp,nearStart,inRock);
-  placeTentTrailRibbons(c,grp);
-  placeExtraMushrooms(c,r,grp,nearStart);
+  try{addAlpineVegetation(c,r,ox,oz,grp,nearStart,inRock)}catch(e){console.warn('고산식물 일부 생성 생략',e)}
+  try{placeTentTrailRibbons(c,grp)}catch(e){console.warn('텐트 표식 일부 생성 생략',e)}
+  try{placeExtraMushrooms(c,r,grp,nearStart)}catch(e){console.warn('버섯 일부 생성 생략',e)}
   {const nb=Math.round(46*dens);const im=new THREE.InstancedMesh(BUSH,foliage,nb);im.frustumCulled=false;const o=new THREE.Object3D(),bc=new THREE.Color();let k=0;
    for(let i=0;i<nb;i++){const x=ox+(r()-.5)*CH,z=oz+(r()-.5)*CH;if(inRock(x,z,.2)||nearStart(x,z,2))continue;const sc=(.22+r()*.38)*clamp(1-(altHere-1550)/1200,.28,1);
      o.position.set(x,H(x,z)+sc*.25,z);o.rotation.set(0,r()*6.28,0);o.scale.set(sc*1.3,sc*.8,sc*1.2);o.updateMatrix();im.setMatrixAt(k,o.matrix);bc.setHSL(.27+r()*.08,altHere>1650?.24:.35,.2+r()*.1);if(altHere>1920)bc.lerp(cSnow,clamp((altHere-1920)/900,0,.36));im.setColorAt(k,bc);k++}
    im.count=k;im.instanceMatrix.needsUpdate=true;if(im.instanceColor)im.instanceColor.needsUpdate=true;im.castShadow=true;grp.add(im)}
-  placeFlora(c,r,ox,oz,grp);placeRockPlants(c,r,grp);placeStreams(c,r,ox,oz,grp);
-  placeDecoyFlora(c,r,ox,oz,grp,nearStart,inRock,dens);
+  try{placeFlora(c,r,ox,oz,grp)}catch(e){console.warn('약초 일부 생성 오류',e)}
+  try{placeRockPlants(c,r,grp)}catch(e){console.warn('바위식물 일부 생성 오류',e)}
+  try{placeStreams(c,r,ox,oz,grp)}catch(e){console.warn('계곡 일부 생성 오류',e)}
+  try{placeDecoyFlora(c,r,ox,oz,grp,nearStart,inRock,dens)}catch(e){console.warn('야생식물 일부 생성 오류',e)}
   const putFruit=(type,id,x,z,fall=true)=>{
     if(takenUntil(id))return;
     if(inRock(x,z,.12)||nearStart(x,z,3)||streamD(x,z)<2.6)return;
@@ -1909,30 +1911,78 @@ function disposeChunk(c){
   c.grp.traverse(o=>{if(o.geometry&&!o.geometry.userData.keep)o.geometry.dispose();if(o.isInstancedMesh&&o.dispose)o.dispose();if(o.material&&o.material.map&&o.material.map!==sparkTex&&o.material.map!==weaveTex&&o.isMesh&&!o.isSprite)o.material.map.dispose()});
   chunks.delete(c.key);
 }
-// Temporary ground is visible ONLY while detailed terrain for that chunk
-// is still loading. No changes to collision, position, plants, or save files.
+// Scenery-first loading: every visible zone has a ground tile, small trees
+// and herb-shaped foliage until its full collectible chunk is ready.
+// The lightweight previews never change actual resource locations or saves.
 const pendingGround=new Map();
+const previewHerbGeo=keep(new THREE.ConeGeometry(.12,.42,5,1));
+previewHerbGeo.translate(0,.23,0);
 function showPendingGround(cx,cz){
   const key=cx+','+cz;
   if(chunks.has(key)||pendingGround.has(key))return;
   const ox=cx*CH+CH/2,oz=cz*CH+CH/2;
-  const geo=new THREE.PlaneGeometry(CH,CH,10,10);geo.rotateX(-Math.PI/2);
-  const pos=geo.attributes.position,col=new Float32Array(pos.count*3),shade=new THREE.Color();
-  for(let i=0;i<pos.count;i++){
-    const x=pos.getX(i)+ox,z=pos.getZ(i)+oz,y=H(x,z),alt=y*ALT_K;
-    pos.setXYZ(i,x,y,z);
-    shade.copy(cGrass).lerp(cRock,clamp((alt-900)/1000,0,.7));
-    if(alt>1500)shade.lerp(cSnow,clamp((alt-1500)/850,0,.92));
-    if(Math.abs(x-pathX(z))<2.6)shade.lerp(cPath,.55);
-    col[i*3]=shade.r;col[i*3+1]=shade.g;col[i*3+2]=shade.b;
-  }
-  geo.setAttribute('color',new THREE.BufferAttribute(col,3));geo.computeVertexNormals();
-  const tile=new THREE.Mesh(geo,terrainMat);tile.receiveShadow=true;tile.frustumCulled=false;tile.userData.terrain=true;
-  scene.add(tile);pendingGround.set(key,tile);
+  const group=new THREE.Group();group.userData.sceneryPreview=true;
+  // Attach immediately. A failed decoration must never prevent ground rendering.
+  scene.add(group);pendingGround.set(key,group);
+  try{
+    const geo=new THREE.PlaneGeometry(CH,CH,12,12);geo.rotateX(-Math.PI/2);
+    const pos=geo.attributes.position,col=new Float32Array(pos.count*3),shade=new THREE.Color();
+    for(let i=0;i<pos.count;i++){
+      const x=pos.getX(i)+ox,z=pos.getZ(i)+oz,y=H(x,z),alt=y*ALT_K;
+      pos.setXYZ(i,x,y-.03,z);
+      shade.copy(cGrass).lerp(cRock,clamp((alt-900)/1000,0,.7));
+      if(alt>1500)shade.lerp(cSnow,clamp((alt-1500)/850,0,.92));
+      if(Math.abs(x-pathX(z))<2.6)shade.lerp(cPath,.55);
+      col[i*3]=shade.r;col[i*3+1]=shade.g;col[i*3+2]=shade.b;
+    }
+    geo.setAttribute('color',new THREE.BufferAttribute(col,3));geo.computeVertexNormals();
+    const tile=new THREE.Mesh(geo,terrainMat);tile.receiveShadow=true;tile.frustumCulled=false;tile.userData.terrain=true;group.add(tile);
+  }catch(e){console.warn('임시 지면 생성 실패:',key,e)}
+  try{
+    // Limited-cost preview forest. Actual trees and herbs replace this entire
+    // group atomically when buildChunk finishes; previews are not collectible.
+    const r=rngOf((Math.imul(cx,73856093)^Math.imul(cz,19349663)^0x5c716a3b)>>>0);
+    const alt=H(ox,oz)*ALT_K,dens=clamp(1-(alt-1200)/1380,.03,1);
+    const pine=[],oak=[],sprigs=[];
+    for(let i=0;i<Math.round(19*dens);i++){
+      const x=ox+(r()-.5)*(CH-5),z=oz+(r()-.5)*(CH-5);
+      if(Math.abs(x-pathX(z))>53||Math.hypot(x-pathX(24),z-24)<8||streamD(x,z)<2.5)continue;
+      const sc=(.50+r()*.38)*clamp(1-(alt-1550)/1100,.19,1);
+      (r()<clamp(.57+alt/2500,.55,.96)?pine:oak).push({x,y:H(x,z)-.2,z,sc});
+    }
+    for(let i=0;i<14;i++){
+      const x=ox+(r()-.5)*(CH-4),z=oz+(r()-.5)*(CH-4);
+      if(Math.abs(x-pathX(z))>52||streamD(x,z)<2.4)continue;
+      const a=H(x,z)*ALT_K,sc=.45+r()*.7;
+      if(a>2450||r()>.8)continue;
+      sprigs.push({x,y:H(x,z)+.01,z,sc});
+    }
+    const addInstances=(geo,mat,locs,scaleFn,tint)=>{
+      if(!locs.length)return;
+      const im=new THREE.InstancedMesh(geo,mat,locs.length),obj=new THREE.Object3D(),color=new THREE.Color();
+      im.frustumCulled=false;
+      locs.forEach((t,i)=>{
+        obj.position.set(t.x,t.y,t.z);obj.rotation.set(0,(i*2.39996)%6.28,0);scaleFn(obj.scale,t.sc);obj.updateMatrix();im.setMatrixAt(i,obj.matrix);
+        if(tint){color.setHex(tint[i%tint.length]);im.setColorAt(i,color)}
+      });
+      im.instanceMatrix.needsUpdate=true;if(im.instanceColor)im.instanceColor.needsUpdate=true;
+      group.add(im);
+    };
+    addInstances(pineTrunk,barkPine,pine,(v,s)=>v.setScalar(s));
+    addInstances(pineC[2],foliage,pine,(v,s)=>v.setScalar(s),[0x42644f,0x4b6d59,0x506e58]);
+    addInstances(oakTrunk,barkOak,oak,(v,s)=>v.setScalar(s));
+    addInstances(oakF1,foliage,oak,(v,s)=>v.setScalar(s),[0x65824e,0x718c53,0x567a4b]);
+    addInstances(previewHerbGeo,foliage,sprigs,(v,s)=>v.setScalar(s),[0x68905a,0x8a9954,0x5e8058,0x9b8f6a]);
+  }catch(e){console.warn('임시 숲 생성 실패 (지면은 유지):',key,e)}
 }
 function hidePendingGround(key){
-  const tile=pendingGround.get(key);if(!tile)return;
-  scene.remove(tile);tile.geometry.dispose();pendingGround.delete(key);
+  const group=pendingGround.get(key);if(!group)return;
+  scene.remove(group);
+  group.traverse(o=>{
+    if(o.geometry&&!o.geometry.userData.keep)o.geometry.dispose();
+    // Instanced preview meshes have no private materials or texture maps.
+  });
+  pendingGround.delete(key);
 }
 let chunkQueue=[];
 let chunkKey='',chunkBuildT=0;
@@ -1953,19 +2003,26 @@ function updateChunks(px,pz,force,dt){
     }
     chunkKey=k;
   }
-  const want=new Set();
-  for(let dz=-VIEW;dz<=VIEW;dz++)for(let dx=-VIEW;dx<=VIEW;dx++){if(dx*dx+dz*dz>VIEW*VIEW+1)continue;want.add((ccx+dx)+','+(ccz+dz))}
-  // Place low-resolution terrain before old distant chunks disappear, so
-  // approaching a new area never reveals empty sky in the ground.
-  for(const key of want)if(!chunks.has(key)){
+  const want=new Set(),previewWant=new Set();
+  const range=VIEW+1;
+  for(let dz=-range;dz<=range;dz++)for(let dx=-range;dx<=range;dx++){
+    const dd=dx*dx+dz*dz;
+    if(dd<=range*range+1)previewWant.add((ccx+dx)+','+(ccz+dz));
+    if(dd<=VIEW*VIEW+1)want.add((ccx+dx)+','+(ccz+dz));
+  }
+  // Remove chunks outside the detailed radius first. Immediately replace
+  // any former chunk still within the preview radius in this same JS turn.
+  // Otherwise a newly removed edge chunk can stay completely empty forever.
+  for(const [key,c] of [...chunks])if(!want.has(key))disposeChunk(c);
+  for(const key of previewWant)if(!chunks.has(key)){
     const [x,z]=key.split(',').map(Number);showPendingGround(x,z);
   }
-  for(const [key,c] of chunks)if(!want.has(key))disposeChunk(c);
-  for(const key of [...pendingGround.keys()])if(!want.has(key))hidePendingGround(key);
+  for(const key of [...pendingGround.keys()])if(!previewWant.has(key))hidePendingGround(key);
   chunkQueue=[...want].filter(key=>!chunks.has(key)).sort((a,b)=>{
     const[ax,az]=a.split(',').map(Number),[bx,bz]=b.split(',').map(Number);
     return((ax-ccx)**2+(az-ccz)**2)-((bx-ccx)**2+(bz-ccz)**2);
   });
+  // Full terrain loads progressively on phones, but the landscape is already visible.
   if(force)while(chunkQueue.length){const key=chunkQueue.shift();if(!buildQueuedChunk(key))break}
 }
 /* ---------- 백약산 해발 2,500m 정상 ---------- */
@@ -2470,7 +2527,7 @@ const PERF={eco:false,fps:60,view:3,fogK:1,occEvery:.08,chunkEvery:.06};
 try{const pref=localStorage.getItem('baekyaksan-eco');PERF.eco=IOS_CLOUD_SAFE||pref==='1'}catch(e){PERF.eco=IOS_CLOUD_SAFE}
 function applyPerf(){
   const dpr=devicePixelRatio||1;
-  PERF.fps=PERF.eco?30:60;PERF.view=PERF.eco?2:3;PERF.fogK=PERF.eco?.72:1;PERF.occEvery=PERF.eco?.16:.08;PERF.chunkEvery=PERF.eco?.20:.06;
+  PERF.fps=PERF.eco?30:60;PERF.view=PERF.eco?2:3;PERF.fogK=PERF.eco?.72:1;PERF.occEvery=PERF.eco?.16:.08;PERF.chunkEvery=PERF.eco?.13:.06;
   renderer.setPixelRatio(PERF.eco?Math.min(dpr,1)*.75:Math.min(dpr,IS_TOUCH?1.5:1.75));
   sun.castShadow=!PERF.eco;
   if(sun.shadow.map&&sun.shadow.mapSize.x!==(IS_TOUCH?1024:2048)){sun.shadow.map.dispose();sun.shadow.map=null}
@@ -3572,7 +3629,11 @@ function frame(now){requestAnimationFrame(frame);
   const covered=mapOpen||!$('bag').classList.contains('hide'),cap=covered?8:PERF.fps;
   if(now-lastDraw<1000/cap-2)return;lastDraw=now;
   const raw=(now-last)/1000,dt=Math.min(.05,raw);last=now;clock+=dt;
-  if(mode==='intro')drawIntro(Math.min(.25,raw));else{updateGame(dt);if(inTent){syncTentChestButton();updateTentSeats(dt)}renderer.render(inTent?tentScene:scene,inTent?tentCam:camera)}}
+  if(mode==='intro')drawIntro(Math.min(.25,raw));else{
+    try{updateGame(dt)}catch(e){if(now-(frame.lastGameError||0)>10000){frame.lastGameError=now;console.warn('화면 유지 중 게임 갱신 오류:',e)}}
+    if(inTent){try{syncTentChestButton();updateTentSeats(dt)}catch(e){console.warn('텐트 표시 오류:',e)}}
+    renderer.render(inTent?tentScene:scene,inTent?tentCam:camera)
+  }}
 addEventListener('resize',onResize);addEventListener('resize',()=>{if(inTent)syncTentChestButton()});applyPerf();requestAnimationFrame(frame);
 $('ecoBtn').onclick=()=>{PERF.eco=!PERF.eco;applyPerf();chunkKey='';toast(PERF.eco?'절전 모드: 화질과 시야를 줄여 가볍게 돌립니다':'절전 모드 해제')};
 function jump(){if(mode==='game'&&!climbing&&!onRock&&!inTent&&Date.now()>=faintUntil&&!P.air&&me.mode!=='dig'){P.vy=5.2;P.air=true}}
