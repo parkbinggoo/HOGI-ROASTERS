@@ -487,9 +487,15 @@ function markTaken(id,until,broadcast=false){
    if(it.mesh&&it.mesh.parent)it.mesh.parent.remove(it.mesh);c.items.splice(i,1)}
  if(broadcast)netPublish('harvest',{resource:id,until});
 }
-function refreshRespawns(){const now=Date.now();let needs=false;
- for(const [id,end] of sharedTaken)if(end<=now){sharedTaken.delete(id);needs=true}
- if(needs){for(const c of [...chunks.values()]){disposeChunk(c)}chunkKey='';chunkQueue=[];updateChunks(P.x,P.z,false,0)}
+function refreshRespawns(){const now=Date.now(),expired=new Set();
+ for(const [id,end] of sharedTaken)if(end<=now){sharedTaken.delete(id);expired.add(id.split(':')[0])}
+ if(!expired.size)return;
+ // Only the chunks containing respawned resources are rebuilt. Do not
+ // discard the entire mountain every time one herb becomes available again.
+ for(const key of expired){const c=chunks.get(key);if(!c)continue;
+   disposeChunk(c);showPendingGround(c.cx,c.cz);
+ }
+ chunkKey='';chunkQueue=[];updateChunks(P.x,P.z,false,0);
 }
 const JACKETS=[0x2f56b0,0xc0392b,0x2e7d4f,0xe08a1e,0x6a4a9a,0x4a4e55];
 const ALT_K=2.5;                      // world unit → displayed metres
@@ -1437,6 +1443,32 @@ function placeFlora(c,r,ox,oz,grp){
     const it={kind:'herb',type:sp.id,id,hits:0,need:sp.need,mesh:m};m.userData.item=it;grp.add(m);c.items.push(it);
   }
 }
+// Prevent empty stretches where stochastic placement generated no herbs.
+// Supplemental plants use existing Korean species, habitat rules, prices,
+// meshes, journal and harvesting. They are NOT non-collectible previews.
+function ensureTrailFlora(c,r,ox,oz,grp){
+  if(oz<SUMMIT_Z-CH||oz>48||Math.abs(ox-pathX(oz))>CH*1.2)return;
+  let found=0;
+  for(const it of c.items){if(it.kind==='herb'&&it.mesh&&
+    Math.abs(it.mesh.position.x-pathX(it.mesh.position.z))<19)found++}
+  if(found>=2)return;
+  const target=2-found;
+  for(let n=0,added=0;n<20&&added<target;n++){
+    const z=oz+(r()-.5)*CH*.85,x=pathX(z)+(r()<.5?-1:1)*(4+r()*13);
+    if(Math.abs(x-ox)>=CH*.48||Math.abs(z-oz)>=CH*.48)continue;
+    const e=envAt(x,z,c);if(e.inRock||e.ds<2.2)continue;
+    let total=0;const options=[];
+    for(const sp of SPECIES){const w=sp.ab*fitOf(sp,e);
+      if(w>.025){options.push([sp,w]);total+=w}}
+    if(total<=0)continue;
+    let roll=r()*total,sp=options[options.length-1][0];
+    for(const entry of options){roll-=entry[1];if(roll<=0){sp=entry[0];break}}
+    const id=`${c.key}:trail${n}`;if(takenUntil(id))continue;
+    const m=makePlantMesh(sp,Math.floor(r()*3));m.position.set(x,H(x,z)-.02,z);m.rotation.y=r()*Math.PI*2;
+    const item={kind:'herb',type:sp.id,id,hits:0,need:sp.need,mesh:m};
+    m.userData.item=item;grp.add(m);c.items.push(item);added++;
+  }
+}
 /* 물길: 물 띠와 물가 돌 */
 const waterMat=new THREE.MeshPhongMaterial({color:0x6aa6b8,transparent:true,opacity:.78,shininess:60,specular:0x9fd0e0,flatShading:true,side:THREE.DoubleSide});
 function placeStreams(c,r,ox,oz,grp){
@@ -1760,6 +1792,48 @@ const chunks=new Map();
 const terrainMat=new THREE.MeshPhongMaterial({vertexColors:true,flatShading:true,shininess:0,specular:0x000000});
 const barkPine=M(0x8a5236),barkOak=M(0x6e5a48),foliage=new THREE.MeshPhongMaterial({color:0xffffff,flatShading:true,shininess:0,specular:0x000000});
 const cGrass=new THREE.Color(0x4a6b34),cGrass2=new THREE.Color(0x5d7f3c),cPath=new THREE.Color(0xa8906a),cLitter=new THREE.Color(0x6e5a38),cRock=new THREE.Color(0x8b8778),cSnow=new THREE.Color(0xf2f3ee),cMoss=new THREE.Color(0x35532c),tmp=new THREE.Color();
+// Permanent trail foundation, independent of disposable/chunk scenery.
+// It ensures that the entire climb to 2500m ALWAYS has a real ground mesh,
+// even when the phone is busy generating its detailed trees and herbs.
+const trailFloorTiles=new Map(),TRAIL_FLOOR_SEGMENT=144,TRAIL_FLOOR_STEP=6;
+const TRAIL_FLOOR_COUNT=Math.ceil((48-SUMMIT_Z)/TRAIL_FLOOR_SEGMENT);
+const TRAIL_FLOOR_OFFSETS=[-60,-45,-30,-15,0,15,30,45,60];
+function makeTrailFloorTile(index){
+  if(index<0||index>=TRAIL_FLOOR_COUNT||trailFloorTiles.has(index))return;
+  const z0=SUMMIT_Z+index*TRAIL_FLOOR_SEGMENT,steps=TRAIL_FLOOR_SEGMENT/TRAIL_FLOOR_STEP;
+  const across=TRAIL_FLOOR_OFFSETS.length,vertices=[],colors=[],indices=[];
+  const color=new THREE.Color();
+  for(let j=0;j<=steps;j++){
+    const z=z0+j*TRAIL_FLOOR_STEP,px=pathX(z);
+    for(let i=0;i<across;i++){
+      const x=px+TRAIL_FLOOR_OFFSETS[i],y=H(x,z),alt=y*ALT_K;
+      vertices.push(x,y-.16,z); // real chunks sit above this safety terrain
+      color.copy(cGrass).lerp(cGrass2,clamp((vn(x*.06,z*.06)+1)*.5,0,1)*.56);
+      if(alt>950)color.lerp(cRock,clamp((alt-950)/1200,0,.78));
+      if(alt>1550)color.lerp(cSnow,clamp((alt-1550)/850,0,.94));
+      if(Math.abs(TRAIL_FLOOR_OFFSETS[i])<9)color.lerp(cPath,alt>1850?.12:.36);
+      colors.push(color.r,color.g,color.b);
+      if(j<steps&&i<across-1){const a=j*across+i,b=a+1,c=a+across,d=c+1;indices.push(a,c,b,b,c,d)}
+    }
+  }
+  const geo=new THREE.BufferGeometry();
+  geo.setAttribute('position',new THREE.Float32BufferAttribute(vertices,3));
+  geo.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));
+  geo.setIndex(indices);geo.computeVertexNormals();
+  const mesh=new THREE.Mesh(geo,terrainMat);mesh.receiveShadow=true;mesh.frustumCulled=false;
+  mesh.userData.terrain=true;mesh.userData.trailFoundation=true;
+  scene.add(mesh);trailFloorTiles.set(index,mesh);
+}
+function ensureTrailFloor(z){
+  const i=Math.floor((Math.max(SUMMIT_Z,Math.min(47,z))-SUMMIT_Z)/TRAIL_FLOOR_SEGMENT);
+  // A nearby section is drawn now; the remaining hike is laid down as
+  // compact, permanent sections over subsequent frames, without a load spike.
+  for(const n of [i,i-1,i+1,i-2,i+2])makeTrailFloorTile(n);
+  if(trailFloorTiles.size<TRAIL_FLOOR_COUNT){
+    for(let n=0;n<TRAIL_FLOOR_COUNT;n++)if(!trailFloorTiles.has(n)){makeTrailFloorTile(n);break}
+  }
+}
+
 // Rocky, wind-exposed dwarf conifers and groundcover. All meshes are batched.
 const ALPINE_CONE=keep(new THREE.ConeGeometry(1,1.8,6,1));
 const ALPINE_CUSHION=keep(new THREE.IcosahedronGeometry(1,0));
@@ -1865,6 +1939,7 @@ function buildChunk(cx,cz){
      o.position.set(x,H(x,z)+sc*.25,z);o.rotation.set(0,r()*6.28,0);o.scale.set(sc*1.3,sc*.8,sc*1.2);o.updateMatrix();im.setMatrixAt(k,o.matrix);bc.setHSL(.27+r()*.08,altHere>1650?.24:.35,.2+r()*.1);if(altHere>1920)bc.lerp(cSnow,clamp((altHere-1920)/900,0,.36));im.setColorAt(k,bc);k++}
    im.count=k;im.instanceMatrix.needsUpdate=true;if(im.instanceColor)im.instanceColor.needsUpdate=true;im.castShadow=true;grp.add(im)}
   try{placeFlora(c,r,ox,oz,grp)}catch(e){console.warn('약초 일부 생성 오류',e)}
+  try{ensureTrailFlora(c,rngOf((Math.imul(cx,741103597)^Math.imul(cz,195871091)^0x5f2519)>>>0),ox,oz,grp)}catch(e){console.warn('산길 약초 배치 오류',e)}
   try{placeRockPlants(c,r,grp)}catch(e){console.warn('바위식물 일부 생성 오류',e)}
   try{placeStreams(c,r,ox,oz,grp)}catch(e){console.warn('계곡 일부 생성 오류',e)}
   try{placeDecoyFlora(c,r,ox,oz,grp,nearStart,inRock,dens)}catch(e){console.warn('야생식물 일부 생성 오류',e)}
@@ -1986,18 +2061,52 @@ function hidePendingGround(key){
 }
 let chunkQueue=[];
 let chunkKey='',chunkBuildT=0;
+const chunkFailures=new Map();
+function rescueTrailChunk(key,cx,cz){
+  // On persistent low-memory failures, retain the visible preview as an
+  // actual local chunk and add real collectible plants if possible.
+  if(!pendingGround.has(key))showPendingGround(cx,cz);
+  const grp=pendingGround.get(key);if(!grp)return false;
+  const c={key,cx,cz,grp,ground:grp.children.find(o=>o.userData.terrain)||null,
+    trees:[],items:[],treeMeshes:[],rocks:[]};
+  try{ensureTrailFlora(c,rngOf((Math.imul(cx,741103597)^Math.imul(cz,195871091)^0x5f2519)>>>0),
+      cx*CH+CH/2,cz*CH+CH/2,grp)}catch(e){console.warn('산길 대체 약초 생성 오류:',key,e)}
+  chunks.set(key,c);
+  pendingGround.delete(key); // Keep the mesh in the world; it is no longer a preview.
+  chunkFailures.delete(key);
+  return true;
+}
 function buildQueuedChunk(key){
-  if(chunks.has(key)){hidePendingGround(key);return true}
+  if(chunks.has(key)){hidePendingGround(key);chunkFailures.delete(key);return true}
   const [x,z]=key.split(',').map(Number);
-  try{buildChunk(x,z);hidePendingGround(key);return true}
-  catch(e){console.warn('지형 조각 재생성 대기:',key,e);return false}
+  try{buildChunk(x,z);hidePendingGround(key);chunkFailures.delete(key);return true}
+  catch(e){
+    const f=chunkFailures.get(key)||{attempts:0,until:0};f.attempts++;
+    // Log the original failure, not a cascade of redraws on every frame.
+    if(f.attempts===1||f.attempts===4)console.warn('등산로 실제 지형 생성 재시도:',key,e);
+    f.until=performance.now()+Math.min(4000,400*f.attempts);
+    chunkFailures.set(key,f);
+    if(f.attempts>=3&&rescueTrailChunk(key,x,z))return true;
+    return false;
+  }
 }
 function updateChunks(px,pz,force,dt){
+  // Never let an optimization or a slow scenery queue erase the actual trail.
+  ensureTrailFloor(pz);
   const ccx=Math.floor(px/CH),ccz=Math.floor(pz/CH);
   if(!force){chunkBuildT+=dt||0;const k=ccx+','+ccz+','+VIEW;
     if(k===chunkKey){
+      // Always prioritize the current tile (and then the player's next tile).
+      // Off-screen decorations may stream later, but land and collectible
+      // vegetation must load where the hiker stands.
       if(chunkQueue.length&&chunkBuildT>=PERF.chunkEvery){
-        chunkBuildT=0;const key=chunkQueue.shift();if(!buildQueuedChunk(key))chunkQueue.push(key);
+        chunkBuildT=0;
+        const now=performance.now();let chosen=-1;
+        for(let i=0;i<chunkQueue.length;i++){
+          const key=chunkQueue[i],retry=chunkFailures.get(key);
+          if(!retry||retry.until<=now){chosen=i;break}
+        }
+        if(chosen>=0){const key=chunkQueue.splice(chosen,1)[0];if(!buildQueuedChunk(key))chunkQueue.push(key)}
       }
       return;
     }
@@ -2010,20 +2119,26 @@ function updateChunks(px,pz,force,dt){
     if(dd<=range*range+1)previewWant.add((ccx+dx)+','+(ccz+dz));
     if(dd<=VIEW*VIEW+1)want.add((ccx+dx)+','+(ccz+dz));
   }
-  // Remove chunks outside the detailed radius first. Immediately replace
-  // any former chunk still within the preview radius in this same JS turn.
-  // Otherwise a newly removed edge chunk can stay completely empty forever.
   for(const [key,c] of [...chunks])if(!want.has(key))disposeChunk(c);
   for(const key of previewWant)if(!chunks.has(key)){
     const [x,z]=key.split(',').map(Number);showPendingGround(x,z);
   }
   for(const key of [...pendingGround.keys()])if(!previewWant.has(key))hidePendingGround(key);
+  // Prioritize current tile, direction of travel, then the remaining radius.
+  // Repeated visits re-use exactly the same random seed and resource IDs.
   chunkQueue=[...want].filter(key=>!chunks.has(key)).sort((a,b)=>{
     const[ax,az]=a.split(',').map(Number),[bx,bz]=b.split(',').map(Number);
-    return((ax-ccx)**2+(az-ccz)**2)-((bx-ccx)**2+(bz-ccz)**2);
+    const da=(ax-ccx)**2+(az-ccz)**2,db=(bx-ccx)**2+(bz-ccz)**2;
+    return da-db||((az-ccz)-(bz-ccz));
   });
-  // Full terrain loads progressively on phones, but the landscape is already visible.
-  if(force)while(chunkQueue.length){const key=chunkQueue.shift();if(!buildQueuedChunk(key))break}
+  for(const key of [...chunkFailures.keys()])if(!want.has(key))chunkFailures.delete(key);
+  if(force){
+    // Only the immediate landing area needs to be synchronous. Doing every
+    // tile in one frame causes Safari to stall or WebGL to lose context.
+    for(let i=0;i<Math.min(3,chunkQueue.length);i++){
+      const key=chunkQueue.shift();if(!buildQueuedChunk(key))chunkQueue.push(key)
+    }
+  }
 }
 /* ---------- 백약산 해발 2,500m 정상 ---------- */
 const SUMMIT_X=pathX(SUMMIT_Z);
@@ -2647,7 +2762,8 @@ function updSky(){
   const key=S.top+S.bot;if(key!==skyKey2){skyKey2=key;document.body.style.background=`linear-gradient(${S.top},${S.bot})`}
   const inCloud=clamp(1-Math.abs(P.y-CLOUD_Y)/28,0,1);
   scene.fog.color.set(S.bot).lerp(_white.setScalar(lerp(.96,.3,night)),inCloud);
-  scene.fog.near=lerp(45*PERF.fogK,4,inCloud);scene.fog.far=lerp(180*PERF.fogK,38,inCloud);
+  // Keep trail, nearby trees and herbs visible even when passing the cloud layer.
+  scene.fog.near=lerp(45*PERF.fogK,26,inCloud);scene.fog.far=lerp(180*PERF.fogK,112,inCloud);
   if(weatherCloud>.01){
     scene.fog.color.lerp(_fogTmp.set(weatherRain>.02?0x879aa1:0xb5c2c3),weatherCloud*(weatherRain>.02?.42:.20));
     scene.fog.far*=1-weatherCloud*.18-weatherRain*.22;
@@ -2953,13 +3069,17 @@ function poseAnimal(a,dt,speed,charging){
  }
  if(j.tail){j.tail.rotation.y=Math.sin(a.step*.55)*.16;j.tail.rotation.x=-.2+Math.sin(a.step*.6)*.09}
 }
+const BOAR_SUMMIT_FREE_ALT=2290;
+function summitForbidsBoar(x,z){
+  return z<SUMMIT_Z+215||H(x,z)*ALT_K>=BOAR_SUMMIT_FREE_ALT;
+}
 function refreshAnimals(){clearExpiredBoarZones();const near=new Set();const cx=Math.floor(P.x/CH),cz=Math.floor(P.z/CH);
  for(let dz=-2;dz<=2;dz++)for(let dx=-2;dx<=2;dx++){const x=cx+dx,z=cz+dz,id=x+','+z;const rr=rngOf((Math.imul(x,24173)^Math.imul(z,11369)^0x61ac)>>>0);
  for(let j=0;j<2;j++){let kind=WILDLIFE[Math.floor(rr()*WILDLIFE.length)],key=id+':animal'+j;
  if(kind.id==='boar'&&h2(x*37+j*13+1041,z*43-j*19-191)>.80)
    kind=WILDLIFE[h2(x*11+j*31+81,z*23-57)>.5?2:3]; // rabbit / water deer
  if(!animals.has(key)){let xx=x*CH+5+rr()*(CH-10),zz=z*CH+5+rr()*(CH-10);
-   if(kind.id==='boar'&&isBoarFreeArea(xx,zz))continue;
+   if(kind.id==='boar'&&(isBoarFreeArea(xx,zz)||summitForbidsBoar(xx,zz)))continue;
    const c=chunks.get(id);
  let homeTree=null;
  if(kind.hab==='tree'&&c&&c.trees.length){homeTree=c.trees[Math.floor(rr()*c.trees.length)];
@@ -3027,7 +3147,7 @@ function updateAnimals(dt){
    turtledove:{idle:1.4,flee:5.2},owl:{idle:.9,flee:4.5},eagleowl:{idle:1.0,flee:4.7}
  };
  for(const [animalKey,a] of animals){
-   if(a.kind.id==='boar'&&isBoarFreeArea(a.x,a.z)){removeWildAnimal(animalKey,a);continue}
+   if(a.kind.id==='boar'&&(isBoarFreeArea(a.x,a.z)||summitForbidsBoar(a.x,a.z))){removeWildAnimal(animalKey,a);continue}
    const sp=a.kind,person=nearestHiker(a.x,a.z),awake=animalAwake(sp);
    const ang=t*.24+a.phase,baseX=a.originX+Math.sin(ang)*a.range*.65,baseZ=a.originZ+Math.cos(ang)*a.range*.65;
    const squirrel=(sp.id==='squirrel'||sp.id==='redsquirrel');
@@ -3630,7 +3750,11 @@ function frame(now){requestAnimationFrame(frame);
   if(now-lastDraw<1000/cap-2)return;lastDraw=now;
   const raw=(now-last)/1000,dt=Math.min(.05,raw);last=now;clock+=dt;
   if(mode==='intro')drawIntro(Math.min(.25,raw));else{
-    try{updateGame(dt)}catch(e){if(now-(frame.lastGameError||0)>10000){frame.lastGameError=now;console.warn('화면 유지 중 게임 갱신 오류:',e)}}
+    try{updateGame(dt)}catch(e){
+      if(now-(frame.lastGameError||0)>10000){frame.lastGameError=now;console.warn('게임 갱신 일부 오류:',e)}
+      // Scenery must keep streaming even if a separate game system fails.
+      try{updateChunks(P.x,P.z,false,dt)}catch(terrainError){console.warn('산길 표시 재시도:',terrainError)}
+    }
     if(inTent){try{syncTentChestButton();updateTentSeats(dt)}catch(e){console.warn('텐트 표시 오류:',e)}}
     renderer.render(inTent?tentScene:scene,inTent?tentCam:camera)
   }}
