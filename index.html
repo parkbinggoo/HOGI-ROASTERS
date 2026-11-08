@@ -129,18 +129,6 @@
   #mapView{position:fixed;inset:0;background:rgba(20,28,26,.45);display:flex;align-items:center;justify-content:center;z-index:10}
   .mapsheet{background:var(--paper);border:1.5px solid #1f2b28;border-radius:4px;padding:14px;display:flex;flex-direction:column;gap:10px;max-width:96vw;max-height:96vh}
   .mhead{display:flex;align-items:center;gap:12px}.mhead b{font-family:'Nanum Myeongjo',serif;font-size:22px;letter-spacing:.2em}.mhead .mkey{font-size:12px;opacity:.55;flex:1}
-
-  #mapLiveCoords{position:absolute;left:9px;top:65px;z-index:2;
-    max-width:min(290px,calc(100% - 18px));padding:9px 11px;
-    border:1px solid rgba(31,43,40,.25);border-radius:8px;
-    background:rgba(244,239,227,.94);box-shadow:0 3px 9px rgba(16,25,19,.12);
-    color:#25332b;font-size:12px;line-height:1.62;pointer-events:none;
-    font-variant-numeric:tabular-nums}
-  #mapLiveCoords .geoTitle{font-family:'Nanum Myeongjo',serif;font-weight:800;margin-bottom:2px}
-  #mapLiveCoords .geoDecimal{font-weight:700}
-  #mapLiveCoords .geoDms{opacity:.78;font-size:11px}
-  #mapLiveCoords .geoNote{opacity:.6;font-size:10px;margin-top:2px}
-  @media(max-width:760px),(pointer:coarse){#mapLiveCoords{top:58px;left:7px;padding:7px 9px;font-size:11px;line-height:1.5}#mapLiveCoords .geoDms{font-size:10px}}
   .mwrap{position:relative}#mapC{position:static;display:block;width:min(680px,92vw,calc(96vh - 90px));height:auto;aspect-ratio:1;border:1px solid rgba(31,43,40,.4);border-radius:3px}
   #found{z-index:12}
   .card.click{cursor:pointer;transition:transform .15s,box-shadow .15s}.card.click:hover{transform:translateY(-2px);box-shadow:0 6px 14px rgba(31,43,40,.15)}
@@ -366,14 +354,7 @@
 
 <div id="mapView" class="hide"><div class="sheet mapsheet">
   <div class="mhead"><b>지도</b><span class="mkey">M 키로 열고 닫기</span><button class="btn" id="mapClose">닫기</button></div>
-  <div class="mwrap"><canvas id="mapC" width="680" height="680"></canvas>
-    <div id="mapLiveCoords" aria-live="off">
-      <div class="geoTitle">📍 나의 현재 위치</div>
-      <div class="geoDecimal" id="mapGeoDecimal"></div>
-      <div class="geoDms" id="mapGeoDms"></div>
-      <div class="geoNote">무전기와 동일한 좌표 · 이동 시 실시간 갱신</div>
-    </div>
-  </div>
+  <div class="mwrap"><canvas id="mapC" width="680" height="680"></canvas></div>
 </div></div>
 <div id="fade"></div>
 <script>
@@ -2035,15 +2016,7 @@ function buildBag(){
 // 게임 속 좌표를 강원 고산지대 어딘가의 위도·경도로 환산 (북쪽 = 오르막 방향 -z, 동쪽 = +x)
 const GEO={lat0:37.7312,lon0:128.5946};
 function toLatLon(x,z){const lat=GEO.lat0+(-z)/111320;return[lat,GEO.lon0+x/(111320*Math.cos(lat*Math.PI/180))]}
-function myGeo(){const [lat,lon]=toLatLon(P.x,P.z);return {lat,lon,alt:Math.round(P.y*ALT_K)}}
-function dms(v,pos,neg,decimals=1){
- const sign=v>=0?pos:neg,unit=Math.pow(10,decimals);
- const ticks=Math.round(Math.abs(v)*3600*unit);
- const deg=Math.floor(ticks/(3600*unit)),rem=ticks-deg*3600*unit;
- const min=Math.floor(rem/(60*unit)),sec=(rem-min*60*unit)/unit;
- const secText=sec.toFixed(decimals).padStart(decimals?3+decimals:2,'0');
- return `${sign} ${deg}°${String(min).padStart(2,'0')}′${secText}″`;
-}
+function dms(v,pos,neg){const s=v>=0?pos:neg;v=Math.abs(v);const d=Math.floor(v),mf=(v-d)*60,m=Math.floor(mf),sec=(mf-m)*60;return `${s} ${d}° ${String(m).padStart(2,'0')}′ ${sec.toFixed(1).padStart(4,'0')}″`}
 const DIRS=['북','북북동','북동','동북동','동','동남동','남동','남남동','남','남남서','남서','서남서','서','서북서','북서','북북서'];
 const bearingOf=h=>(Math.atan2(Math.sin(h),-Math.cos(h))*180/Math.PI+360)%360;
 const dirName=b=>DIRS[Math.round(b/22.5)%16];
@@ -2080,13 +2053,10 @@ function drawMap(){
     for(const t of ch.trees){if(Math.abs(t.x-P.x)>r0||Math.abs(t.z-P.z)>r0)continue;const[x,y]=toPx(t.x,t.z);const rr=(t.kind==='pine'?2.4:3)*t.s/s;g.fillStyle=t.kind==='pine'?'rgba(38,70,44,.42)':'rgba(70,110,52,.4)';g.beginPath();g.arc(x,y,rr,0,7);g.fill();g.fillStyle='rgba(60,40,25,.7)';g.beginPath();g.arc(x,y,Math.max(1,.4*t.s/s),0,7);g.fill()}
     for(const k of ch.rocks||[]){if(Math.abs(k.x-P.x)>r0||Math.abs(k.z-P.z)>r0)continue;const[x,y]=toPx(k.x,k.z);g.fillStyle='rgba(150,146,132,.95)';g.strokeStyle='rgba(80,76,66,.9)';g.lineWidth=1;g.beginPath();g.arc(x,y,k.r/s,0,7);g.fill();g.stroke()}}}
   // 위도·경도 눈금: 확대에 맞춰 간격(초)을 고름
-  const {lat:lat0,lon:lon0,alt:myAlt}=myGeo();
-  $('mapGeoDecimal').textContent=`북위 ${lat0.toFixed(5)}° · 동경 ${lon0.toFixed(5)}° · 해발 ${myAlt.toLocaleString()}m`;
-  $('mapGeoDms').textContent=`${dms(lat0,'N','S')} · ${dms(lon0,'E','W')}`;
-  const mPerLon=111320*Math.cos(lat0*Math.PI/180);
+  const[lat0,lon0]=toLatLon(P.x,P.z),mPerLon=111320*Math.cos(lat0*Math.PI/180);
   const step=[1,2,5,10,15,30,60,120,300].find(v=>v/3600*111320/s>=95)||300;
   const latTop=lat0+cy*s/111320,latBot=lat0-cy*s/111320,lonL=lon0-cx*s/mPerLon,lonR=lon0+cx*s/mPerLon;
-  const fmt=(v,p,n)=>dms(v,p,n,0);
+  const fmt=(v,p,n)=>{const sg=v>=0?p:n;v=Math.abs(v)+1e-9;const d=Math.floor(v),m=Math.floor((v-d)*60),sec=Math.round(((v-d)*60-m)*60);return sec===60?`${d}°${m+1}′00″${sg}`:`${d}°${String(m).padStart(2,'0')}′${String(sec).padStart(2,'0')}″${sg}`};
   g.font='10.5px "Gowun Dodum",sans-serif';g.lineWidth=1;
   for(let v=Math.ceil(latBot*3600/step)*step/3600;v<=latTop;v+=step/3600){const y=cy-(v-lat0)*111320/s;
     g.strokeStyle='rgba(31,43,40,.22)';g.beginPath();g.moveTo(0,y);g.lineTo(Wm,y);g.stroke();
@@ -2138,7 +2108,7 @@ addEventListener('keydown',e=>{if(e.target.tagName==='INPUT'||mode!=='game')retu
 
 /* ================= RADIO ================= */
 const RADIO_PHRASES=[
- ['위치 공유',()=>{const {lat,lon,alt}=myGeo();return `여기는 ${cleanNick(save.nick)||'산객'}! 현재 북위 ${lat.toFixed(5)}°, 동경 ${lon.toFixed(5)}°, 해발 ${alt}m입니다. 위치 확인 부탁합니다.`}],
+ ['위치 공유',()=>{const [lat,lon]=toLatLon(P.x,P.z);return `여기는 ${cleanNick(save.nick)||'산객'}! 현재 북위 ${lat.toFixed(5)}°, 동경 ${lon.toFixed(5)}°, 해발 ${Math.round(P.y*ALT_K)}m입니다. 위치 확인 부탁합니다.`}],
  ['희귀 발견',()=>`여기는 ${cleanNick(save.nick)||'산객'}! ${lastFound&&Date.now()-lastFound.t<90000?'방금 귀한 약초를 발견했습니다!':'이 근처에 희귀한 약초가 있을지도 모르겠습니다.'} 주변을 살펴봐 주세요!`],
  ['산짐승 조심',()=>`산객 여러분, 주변에 야생동물이 보입니다. 소리 지르거나 가까이 가지 말고 조심해서 이동하세요!`],
  ['인사',()=>`산객 여러분, 안녕하세요! 오늘도 안전한 산행 되시길 바랍니다. 좋은 약초 만나세요!`]
